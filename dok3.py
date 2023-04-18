@@ -1,6 +1,7 @@
 import discord
 import asyncio
 import gspread
+import os
 
 from google.oauth2 import service_account
 
