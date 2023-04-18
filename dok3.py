@@ -100,7 +100,7 @@ async def vote(ctx, *, args):
             
 #------------------------------------------------고정------------------------------------------------------# 
 
-sheet1 = client.open('서버기록').worksheet('독독독')
+sheet4 = client.open('서버기록').worksheet('독독독')
 rows = sheet4.get_all_values()
 
 sticky_messages = {}
