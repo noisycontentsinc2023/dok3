@@ -4,6 +4,7 @@ import gspread
 import os
 
 from google.oauth2 import service_account
+from discord.ext import tasks, commands
 
 intents = discord.Intents.default()
 intents.members = True
