@@ -3,6 +3,7 @@ import asyncio
 import gspread
 import os
 
+from discord.ext.commands import check
 from google.oauth2 import service_account
 from discord.ext import tasks, commands
 
