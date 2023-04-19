@@ -1,11 +1,12 @@
 import discord
 import asyncio
-import gspread
 import os
 import requests
 import random
+import gspread_asyncio
 
-from google.oauth2 import service_account
+from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from discord import Embed
 from discord import Interaction
 from discord.ext import tasks
@@ -37,8 +38,8 @@ creds_info = {
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/noisycontents%40thematic-bounty-382700.iam.gserviceaccount.com"
 }
-creds = service_account.Credentials.from_service_account_info(info=creds_info, scopes=scope)
-client = gspread.authorize(creds)
+credentials = Credentials.from_service_account_info(creds_info, scopes=scope)
+aio_creds = credentials
 
 #------------------------------------------------투표------------------------------------------------------#  
 def get_emoji(emoji):
@@ -108,9 +109,15 @@ async def vote(ctx, *, args):
             
 #------------------------------------------------고정------------------------------------------------------# 
 
-sheet4 = client.open('서버기록').worksheet('독독독')
-rows = sheet4.get_all_values()
-
+# Set up Google Sheets worksheet
+async def get_sheet4():
+    client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
+    client = await client_manager.authorize()
+    spreadsheet = await client.open('서버기록')
+    sheet4 = await spreadsheet.worksheet('독독독')
+    rows = await sheet4.get_all_values()
+    return sheet4, rows 
+  
 sticky_messages = {}
 
 for row in rows:
@@ -126,40 +133,30 @@ def has_specific_roles(allowed_role_ids):
 allowed_role_ids = [1019165662364586034, 1003257850799341615]    
     
 # 스프레드시트에서 초기 고정 메시지를 가져옵니다.
-sticky_messages = {}
-last_sticky_messages = {}
-
-sheet4_values = sheet4.get_all_values()
-for row in sheet4_values:
-    if len(row) == 2 and row[0].isdigit():
-        channel_id = int(row[0])
-        message = row[1]
-        sticky_messages[channel_id] = message
-
-def refresh_sticky_messages():
+sync def refresh_sticky_messages(sheet4):
     global sticky_messages
     global last_sticky_messages
-    sheet1_values = sheet4.get_all_values()
+    sheet4_values = await sheet4.get_all_values()
 
-    new_sticky_messages = {}  # 반복문 바깥에서 선언합니다.
-    for row in sheet1_values:
+    new_sticky_messages = {}
+    for row in sheet4_values:
         if len(row) == 2 and row[0].isdigit():
             channel_id = int(row[0])
             message = row[1]
-            new_sticky_messages[channel_id] = message  # 값을 할당합니다.
+            new_sticky_messages[channel_id] = message
 
     deleted_channel_ids = set(sticky_messages.keys()) - set(new_sticky_messages.keys())
     for channel_id in deleted_channel_ids:
         if channel_id in last_sticky_messages:
             old_message = last_sticky_messages[channel_id]
             try:
-                asyncio.create_task(old_message.delete())  # asyncio.create_task를 사용하여 비동기로 실행합니다.
+                asyncio.create_task(old_message.delete())
             except discord.NotFound:
                 pass
 
     sticky_messages = new_sticky_messages
     last_sticky_messages = {}
-
+    
 @bot.command(name='고정')
 @has_specific_roles(allowed_role_ids)
 async def sticky(ctx, *, message):
@@ -168,16 +165,17 @@ async def sticky(ctx, *, message):
     sticky_messages[channel_id] = message
 
     # 스프레드시트에 고정 메시지를 저장합니다.
-    if str(channel_id) in sheet4.col_values(1):
-        row_num = int(sheet4.col_values(1).index(str(channel_id))) + 1
+    sheet4, _ = await get_sheet4()
+    if str(channel_id) in await sheet4.col_values(1):
+        row_num = (await sheet4.col_values(1)).index(str(channel_id)) + 1
     else:
-        row_num = len(sheet4.col_values(1)) + 1
+        row_num = len(await sheet4.col_values(1)) + 1
 
-    sheet4.update_cell(row_num, 1, str(channel_id))
-    sheet4.update_cell(row_num, 2, message)
+    await sheet4.update_cell(row_num, 1, str(channel_id))
+    await sheet4.update_cell(row_num, 2, message)
 
     # 스프레드시트에 저장된 내용을 업데이트합니다.
-    refresh_sticky_messages()
+    await refresh_sticky_messages(sheet4)
 
     await ctx.send(f'메시지가 고정됐습니다!')
 
@@ -191,11 +189,12 @@ async def unsticky(ctx):
         del sticky_messages[channel_id]
 
         # 스프레드시트에서 고정 메시지를 삭제합니다.
-        row_num = int(sheet4.col_values(1).index(str(channel_id))) + 1
-        sheet4.delete_row(row_num)
+        sheet4, _ = await get_sheet4()
+        row_num = (await sheet4.col_values(1)).index(str(channel_id)) + 1
+        await sheet4.delete_row(row_num)
 
         # 스프레드시트에 저장된 내용을 업데이트합니다.
-        refresh_sticky_messages()
+        await refresh_sticky_messages(sheet4)
 
         await ctx.send('고정이 해제됐어요!')
     else:
