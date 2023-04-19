@@ -133,7 +133,7 @@ def has_specific_roles(allowed_role_ids):
 allowed_role_ids = [1019165662364586034, 1003257850799341615]    
     
 # 스프레드시트에서 초기 고정 메시지를 가져옵니다.
-sync def refresh_sticky_messages(sheet4):
+async def refresh_sticky_messages(sheet4):
     global sticky_messages
     global last_sticky_messages
     sheet4_values = await sheet4.get_all_values()
