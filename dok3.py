@@ -173,8 +173,8 @@ async def sticky(ctx, *, message):
     else:
         row_num = len(sheet4.col_values(1)) + 1
 
-    sheet1.update_cell(row_num, 1, str(channel_id))
-    sheet1.update_cell(row_num, 2, message)
+    sheet4.update_cell(row_num, 1, str(channel_id))
+    sheet4.update_cell(row_num, 2, message)
 
     # 스프레드시트에 저장된 내용을 업데이트합니다.
     refresh_sticky_messages()
