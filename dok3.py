@@ -2,10 +2,13 @@ import discord
 import asyncio
 import gspread
 import os
+import requests
 
-from discord.ext.commands import check
 from google.oauth2 import service_account
+from discord import Embed
+from discord import Interaction
 from discord.ext import tasks, commands
+from discord.ext.commands import Context
 
 intents = discord.Intents.default()
 intents.members = True
