@@ -118,9 +118,6 @@ async def get_sheet4():
     return sheet4, rows 
   
 sticky_messages = {}
-
-for row in rows:
-    sticky_messages[int(row[0])] = row[1]
     
 def has_specific_roles(allowed_role_ids):
     async def predicate(ctx):
