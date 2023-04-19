@@ -3,3 +3,4 @@ discord.py
 google-auth
 google-auth-oauthlib
 gspread
+requests
