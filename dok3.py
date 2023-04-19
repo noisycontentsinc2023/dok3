@@ -121,7 +121,7 @@ def has_specific_roles(allowed_role_ids):
 
     return check(predicate)
 
-allowed_role_ids = [922400231549722664, 1019164281696174180]    
+allowed_role_ids = [1019165662364586034, 1003257850799341615]    
     
 # 스프레드시트에서 초기 고정 메시지를 가져옵니다.
 sticky_messages = {}
