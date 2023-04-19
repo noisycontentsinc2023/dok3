@@ -121,7 +121,7 @@ def has_specific_roles(allowed_role_ids):
         allowed_roles = [ctx.guild.get_role(role_id) for role_id in allowed_role_ids]
         return any(role in ctx.author.roles for role in allowed_roles)
 
-    return check(predicate)
+    return commands.check(predicate)
 
 allowed_role_ids = [1019165662364586034, 1003257850799341615]    
     
