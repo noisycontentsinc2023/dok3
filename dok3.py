@@ -7,7 +7,8 @@ import requests
 from google.oauth2 import service_account
 from discord import Embed
 from discord import Interaction
-from discord.ext import tasks, commands
+from discord.ext import tasks
+from discord.ext import commands
 from discord.ext.commands import Context
 
 intents = discord.Intents.default()
