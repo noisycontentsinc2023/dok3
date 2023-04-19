@@ -11,12 +11,14 @@ from discord.ext import tasks, commands
 from discord.ext.commands import Context
 
 intents = discord.Intents.default()
+intents.message_content = True
 intents.members = True
+intents.typing = False
+intents.presences = False
 
 TOKEN = os.environ['TOKEN']
 PREFIX = os.environ['PREFIX']
 
-intents=discord.Intents.all()
 prefix = '!'
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
