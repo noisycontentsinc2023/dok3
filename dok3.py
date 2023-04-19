@@ -5,7 +5,6 @@ import requests
 import random
 import gspread_asyncio
 
-from oauth2client.service_account import ServiceAccountCredentials
 from google.oauth2.service_account import Credentials
 from discord import Embed
 from discord import Interaction
