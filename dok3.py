@@ -3,6 +3,7 @@ import asyncio
 import gspread
 import os
 import requests
+import random
 
 from google.oauth2 import service_account
 from discord import Embed
