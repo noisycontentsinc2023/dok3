@@ -219,5 +219,190 @@ async def on_message(message):
         new_message = await message.channel.send(sticky_messages[message.channel.id])
         last_sticky_messages[message.channel.id] = new_message
         
+#1일1독#
+
+# Set up Google Sheets worksheet
+async def get_sheet5():
+    client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
+    client = await client_manager.authorize()
+    spreadsheet = await client.open('서버기록')
+    sheet5 = await spreadsheet.worksheet('1일1독')
+    rows = await sheet5.get_all_values()
+    return sheet5, rows 
+
+async def find_user(username, sheet):
+    cell = None
+    try:
+        cells = await sheet.findall(username)
+        if cells:
+            cell = cells[0]
+    except gspread.exceptions.APIError as e:
+        print(f'find_user error: {e}')
+    return cell
+
+class AuthButton(discord.ui.Button):
+    def __init__(self, ctx, user, date):
+        super().__init__(style=discord.ButtonStyle.green, label="확인 ")
+        self.ctx = ctx
+        self.user = user
+        self.date = date
+        self.stop_loop = False  # Add the stop_loop attribute
+    
+    async def callback(self, interaction: discord.Interaction):
+        
+        sheet5, rows = await get_sheet5()
+        
+        if interaction.user == self.ctx.author:
+            return
+        existing_users = await sheet5.col_values(1)
+        if str(self.user) not in existing_users:
+            empty_row = len(existing_users) + 1
+            await sheet5.update_cell(empty_row, 1, str(self.user))
+            existing_dates = await sheet5.row_values(1)
+            if self.date not in existing_dates:
+                empty_col = len(existing_dates) + 1
+                await sheet5.update_cell(1, empty_col, self.date)
+                await sheet5.update_cell(empty_row, empty_col, "1")
+            else:
+                col = existing_dates.index(self.date) + 1
+                await sheet5.update_cell(empty_row, col, "1")
+        else:
+            index = existing_users.index(str(self.user)) + 1
+            existing_dates = await sheet5.row_values(1)
+            if self.date not in existing_dates:
+                empty_col = len(existing_dates) + 1
+                await sheet5.update_cell(1, empty_col, self.date)
+                await sheet5.update_cell(index, empty_col, "1")
+            else:
+                col = existing_dates.index(self.date) + 1
+                await sheet2.update_cell(index, col, "1")
+        await interaction.message.edit(embed=discord.Embed(title="인증상황", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 {self.date} 1일1독 인증했습니다🥳"), view=None)
+        self.stop_loop = True
+
+async def update_embed(ctx, date, msg):
+    button = AuthButton(ctx, ctx.author, date) # Move button creation outside of the loop
+    while True:
+        try:
+            if button.stop_loop: # Check if stop_loop is True before updating the message
+                break
+
+            view = discord.ui.View(timeout=None)
+            view.add_item(button)
+            view.add_item(CancelButton(ctx))
+
+            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date} 1일1독 인증 요청입니다")
+            await msg.edit(embed=embed, view=view)
+            await asyncio.sleep(60)
+        except discord.errors.NotFound:
+            break
+class CancelButton(discord.ui.Button):
+    def __init__(self, ctx):
+        super().__init__(style=discord.ButtonStyle.red, label="취소")
+        self.ctx = ctx
+        self.stop_loop = False  # Add the stop_loop attribute
+    
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.author.id != self.ctx.author.id:
+            # Interaction was not initiated by the same user who invoked the command
+            await interaction.response.send_message("You cannot use this button.", ephemeral=True)
+            return
+
+async def update_embed(ctx, date, msg):
+    button = AuthButton(ctx, ctx.author, date) # Move button creation outside of the loop
+    cancel = CancelButton(ctx)  # Create a CancelButton instance
+    while True:
+        try:
+            if button.stop_loop or cancel.stop_loop: # Check if any button's stop_loop is True before updating the message
+                break
+
+            view = discord.ui.View(timeout=None)
+            view.add_item(button)
+            view.add_item(cancel)  # Add the CancelButton to the view
+
+            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date} 1일1독 인증 요청입니다")
+            await msg.edit(embed=embed, view=view)
+            await asyncio.sleep(60)
+        except discord.errors.NotFound:
+            break
+        
+@bot.command(name='인증')
+async def Authentication(ctx, date):
+    
+    # Validate the input date
+    if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
+        await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
+        return
+    
+    sheet5, rows = await get_sheet5()
+    existing_users = await sheet5.col_values(1)
+    if str(ctx.author) in existing_users:
+        user_index = existing_users.index(str(ctx.author)) + 1
+        existing_dates = await sheet5.row_values(1)
+        if date in existing_dates:
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet5.cell(user_index, date_index)
+            if cell_value.value == "1":
+                await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
+                return
+
+    embed = discord.Embed(title="인증상태", description=f"{ctx.author.mention}님의 {date} 1일1독 인증 요청입니다")
+    view = discord.ui.View()
+    button = AuthButton(ctx, ctx.author, date)
+    view.add_item(button)
+    view.add_item(CancelButton(ctx)) # Add the CancelButton to the view
+    msg = await ctx.send(embed=embed, view=view)
+    
+    asyncio.create_task(update_embed(ctx, date, msg))
+
+    def check(interaction: discord.Interaction):
+        return interaction.message.id == msg.id and interaction.data.get("component_type") == discord.ComponentType.button.value
+
+    await bot.wait_for("interaction", check=check)
+   
+    
+def get_week_range(): 
+    today = date.today() # 오늘 날짜 
+    monday = today - timedelta(days=today.weekday()) #현재 날짜에서 오늘만큼의 요일을 빼서 월요일 날짜 획득
+    sunday = monday + timedelta(days=6)
+    return monday, sunday
+
+    
+@bot.command(name='누적')
+async def accumulated_auth(ctx):
+    sheet2, rows = await get_sheet2()
+    existing_users = await sheet2.col_values(1)
+    
+    if str(ctx.author) not in existing_users:
+        await ctx.send(f"{ctx.author.mention}님, 1일1독 기록이 없습니다")
+        return
+
+    user_index = existing_users.index(str(ctx.author)) + 1
+    total = 0
+    monday, sunday = get_week_range()
+    existing_dates = await sheet5.row_values(1)
+    for date in existing_dates:
+        if date and monday.strftime('%m%d') <= date <= sunday.strftime('%m%d'):
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet2.cell(user_index, date_index)
+            if cell_value.value:
+                total += int(cell_value.value)
+    
+    overall_ranking = await sheet5.cell(user_index, 2) # Read the value of column B
+    overall_ranking_value = int(overall_ranking.value)
+    
+    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
+    
+    if overall_ranking_value >= 10 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
+        role = ctx.guild.get_role(1040094410488172574)
+        await ctx.author.add_roles(role)
+        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
+
+    if overall_ranking_value >= 30 and not discord.utils.get(ctx.author.roles, id=1040094943722606602):
+        role = ctx.guild.get_role(1040094943722606602)
+        await ctx.author.add_roles(role)
+        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
+
+    await ctx.send(embed=embed)
+    
 #봇 실행
 bot.run(TOKEN)
