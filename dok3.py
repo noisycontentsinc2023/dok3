@@ -276,7 +276,7 @@ class AuthButton(discord.ui.Button):
                 await sheet5.update_cell(index, empty_col, "1")
             else:
                 col = existing_dates.index(self.date) + 1
-                await sheet2.update_cell(index, col, "1")
+                await sheet5.update_cell(index, col, "1")
         await interaction.message.edit(embed=discord.Embed(title="인증상황", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 {self.date} 1일1독 인증했습니다🥳"), view=None)
         self.stop_loop = True
 
@@ -370,8 +370,8 @@ def get_week_range():
     
 @bot.command(name='누적')
 async def accumulated_auth(ctx):
-    sheet2, rows = await get_sheet2()
-    existing_users = await sheet2.col_values(1)
+    sheet5, rows = await get_sheet5()
+    existing_users = await sheet5.col_values(1)
     
     if str(ctx.author) not in existing_users:
         await ctx.send(f"{ctx.author.mention}님, 1일1독 기록이 없습니다")
@@ -384,7 +384,7 @@ async def accumulated_auth(ctx):
     for date in existing_dates:
         if date and monday.strftime('%m%d') <= date <= sunday.strftime('%m%d'):
             date_index = existing_dates.index(date) + 1
-            cell_value = await sheet2.cell(user_index, date_index)
+            cell_value = await sheet5.cell(user_index, date_index)
             if cell_value.value:
                 total += int(cell_value.value)
     
