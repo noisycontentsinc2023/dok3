@@ -257,26 +257,26 @@ class AuthButton(discord.ui.Button):
             return
         existing_users = await sheet5.col_values(1)
         if str(self.user) not in existing_users:
-            empty_row = len(existing_users) + 1
-            await sheet5.update_cell(empty_row, 1, str(self.user))
+            empty_row = len(existing_users) + 2
+            await sheet5.update_cell(empty_row, 1, str(self.user))  # A열에서 2행부터 입력
             existing_dates = await sheet5.row_values(1)
             if self.date not in existing_dates:
                 empty_col = len(existing_dates) + 1
                 await sheet5.update_cell(1, empty_col, self.date)
-                await sheet5.update_cell(empty_row, empty_col, "1")
+                await sheet5.update_cell(empty_row, empty_col, "1")  # 날짜에 맞는 셀에 1 입력
             else:
                 col = existing_dates.index(self.date) + 1
-                await sheet5.update_cell(empty_row, col, "1")
+                await sheet5.update_cell(empty_row, col, "1")  # 날짜에 맞는 셀에 1 입력
         else:
             index = existing_users.index(str(self.user)) + 1
             existing_dates = await sheet5.row_values(1)
             if self.date not in existing_dates:
                 empty_col = len(existing_dates) + 1
                 await sheet5.update_cell(1, empty_col, self.date)
-                await sheet5.update_cell(index, empty_col, "1")
+                await sheet5.update_cell(index, empty_col, "1")  # 날짜에 맞는 셀에 1 입력
             else:
                 col = existing_dates.index(self.date) + 1
-                await sheet5.update_cell(index, col, "1")
+                await sheet5.update_cell(index, col, "1")  # 날짜에 맞는 셀에 1 입력
         await interaction.message.edit(embed=discord.Embed(title="인증상황", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 {self.date} 1일1독 인증했습니다🥳"), view=None)
         self.stop_loop = True
 
@@ -329,7 +329,6 @@ async def update_embed(ctx, date, msg):
 @bot.command(name='인증')
 async def authentication(ctx, date):
     
-    # Validate the input date
     if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
         return
