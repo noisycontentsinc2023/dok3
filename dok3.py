@@ -218,8 +218,8 @@ async def on_message(message):
 
         new_message = await message.channel.send(sticky_messages[message.channel.id])
         last_sticky_messages[message.channel.id] = new_message
-        
-#1일1독#
+
+#------------------------------------------------1일1독------------------------------------------------------# 
 
 # Set up Google Sheets worksheet
 async def get_sheet5():
@@ -326,7 +326,7 @@ async def update_embed(ctx, date, msg):
             break
         
 @bot.command(name='인증')
-async def Authentication(ctx, date):
+async def authentication(ctx, date):
     
     # Validate the input date
     if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
