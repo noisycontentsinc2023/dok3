@@ -252,9 +252,9 @@ class Dropdown(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if self.values[0] == "인증":
-            await interaction.response.send_message("1일1독을 인증하시려면 !인증 인증하려는 날짜를 입력해주세요! 예시)!인증 0425", ephemeral=True)
+            await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425", ephemeral=True)
         elif self.values[0] == "누적":
-            await 누적(interaction)
+            await 누적(interaction.user)
             
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
@@ -265,11 +265,11 @@ async def one_per_day(ctx):
 
     await ctx.send(embed=embed, view=view)
 
-async def 누적(ctx):
+async def 누적(user):
     sheet5, rows = await get_sheet5()
     existing_users = await sheet5.col_values(1)
     
-    if str(ctx.author) not in existing_users:
+    if str(ctx.user) not in existing_users:
         await ctx.send(f"{ctx.author.mention}님, 1일1독 기록이 없습니다")
         return
 
