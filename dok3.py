@@ -12,7 +12,7 @@ from discord import Interaction
 from discord.ext import tasks
 from discord.ext import commands
 from discord.ext.commands import Context
-from discord.ui import Select, SelectOption
+from discord.ui import Select
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -243,21 +243,28 @@ async def find_user(username, sheet):
     return cell
 
 class DokCommandSelect(Select):
-    def __init__(self, ctx):
-        options = [
-            SelectOption(label="인증", value="authentication", emoji="🔓"),
-        ]
-
-        super().__init__(custom_id="dok_command_select", placeholder="원하는 명령어를 선택하세요.", options=options, max_values=1)
-        self.ctx = ctx
+    def __init__(self):
+        super().__init__(
+            custom_id="dok_commands",
+            placeholder="원하시는 명령어를 선택하세요",
+            min_values=1,
+            max_values=1,
+            options=[
+                {
+                    "label": "인증",
+                    "value": "authentication",
+                    "emoji": "🔓"
+                }
+            ]
+        )
 
     async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
+        selected_option = self.values[0]
 
-        if self.values[0] == "authentication":
-            asyncio.create_task(self.authentication(interaction))
+        if selected_option == "authentication_dok":
+            await interaction.response.send_message("인증 과정을 진행합니다. 날짜를 입력해주세요.")
 
-    async def authentication(self, interaction):
+    async def authentication_dok(self, interaction):
         embed = discord.Embed(title="날짜 입력", description="날짜를 `MMdd` 형식으로 입력하세요. (예: 0101)")
         msg = await interaction.followup.send(embed=embed)
 
