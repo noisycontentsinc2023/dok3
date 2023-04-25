@@ -1,5 +1,5 @@
-discord
-discord.py
+discord==2.2.2
+discord.py==2.2.2
 google-auth
 google-auth-oauthlib
 gspread_asyncio
