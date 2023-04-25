@@ -242,23 +242,36 @@ async def find_user(username, sheet):
         print(f'find_user error: {e}')
     return cell
 
-class SelectMenuOption(discord.ui.Select):
-    def __init__(self):
-        options = [
-            discord.SelectOption(label="인증", description="1일1독 인증을 요청합니다."),
-        ]
-        super().__init__(placeholder="원하시는 명령어를 선택하세요", min_values=1, max_values=1, options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "인증":
-            await interaction.channel.send(f"{interaction.user.mention}님, 날짜를 입력해주세요. (예: 0101)")
-            
 @bot.command(name="1일1독")
-async def one_day_one_read(ctx):
-    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention}님 원하시는 명령어를 아래에서 골라주세요")
-    view = discord.ui.View()
-    view.add_item(SelectMenuOption())
-    await ctx.send(embed=embed, view=view)
+async def one_per_day(ctx):
+    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
+    components = [
+        [
+            discord.ui.Select(
+                options=[
+                    discord.SelectOption(label="인증", value="인증"),
+                    discord.SelectOption(label="누적", value="누적")
+                ]
+            )
+        ]
+    ]
+
+    await ctx.send(embed=embed, components=components)
+
+@bot.event
+async def on_component(ctx: discord.ui.ComponentContext):
+    if isinstance(ctx.origin_message, discord.Message):
+        if ctx.origin_message.author.id == bot.user.id:
+            if ctx.origin_message.embeds:
+                embed = ctx.origin_message.embeds[0]
+                if embed.title == "1일1독 명령어 모음집":
+                    if ctx.selected_options[0] == "인증":
+                        await ctx.send("1일1독을 인증하시려면 !인증 인증하려는 날짜를 입력해주세요! 예시)!인증 0425")
+                    elif ctx.selected_options[0] == "누적":
+                        await 누적(ctx)
+
+@bot.command(name="누적")
+async def 누적(ctx):iew)
     
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
