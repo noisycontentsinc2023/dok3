@@ -243,7 +243,7 @@ async def find_user(username, sheet):
     return cell
 
 class DokCommandSelect(Select):
-    def __init__(self):
+    def __init__(self, ctx):
         super().__init__(
             custom_id="dok_commands",
             placeholder="원하시는 명령어를 선택하세요",
@@ -257,6 +257,7 @@ class DokCommandSelect(Select):
                 }
             ]
         )
+        self.ctx = ctx
 
     async def callback(self, interaction: discord.Interaction):
         selected_option = self.values[0]
