@@ -269,9 +269,6 @@ async def on_component(ctx: discord.ui.ComponentContext):
                         await ctx.send("1일1독을 인증하시려면 !인증 인증하려는 날짜를 입력해주세요! 예시)!인증 0425")
                     elif ctx.selected_options[0] == "누적":
                         await 누적(ctx)
-
-@bot.command(name="누적")
-async def 누적(ctx):iew)
     
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
