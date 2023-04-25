@@ -389,13 +389,13 @@ def get_week_range():
     return monday, sunday
   
 @bot.command(name='누적')
-async def accumulated_auth(interaction: discord.Interaction):
-    user = interaction.user
+async def accumulated_auth(ctx):
+    user = ctx.author
     sheet5, rows = await get_sheet5()
     existing_users = await sheet5.col_values(1)
 
     if str(user) not in existing_users:
-        await interaction.response.send_message(f"{user.mention}님, 1일1독 기록이 없습니다", ephemeral=True)
+        await ctx.send(f"{user.mention}님, 1일1독 기록이 없습니다", ephemeral=True)
         return
 
     user_index = existing_users.index(str(user)) + 1
@@ -408,23 +408,23 @@ async def accumulated_auth(interaction: discord.Interaction):
             cell_value = await sheet5.cell(user_index, date_index)
             if cell_value.value:
                 total += int(cell_value.value)
-    
+
     overall_ranking = await sheet5.cell(user_index, 2) # Read the value of column B
     overall_ranking_value = int(overall_ranking.value)
-    
+
     embed = discord.Embed(title="누적 인증 현황", description=f"{user.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
-    
+
     if overall_ranking_value >= 10 and not discord.utils.get(user.roles, id=1040094410488172574):
-        role = interaction.guild.get_role(1040094410488172574)
+        role = ctx.guild.get_role(1040094410488172574)
         await user.add_roles(role)
         embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
 
     if overall_ranking_value >= 30 and not discord.utils.get(user.roles, id=1040094943722606602):
-        role = interaction.guild.get_role(1040094943722606602)
+        role = ctx.guild.get_role(1040094943722606602)
         await user.add_roles(role)
         embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
 
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await ctx.send(embed=embed, ephemeral=True)
     
 
     
