@@ -242,22 +242,48 @@ async def find_user(username, sheet):
     return cell
 
 class DokCommandSelect(Select):
-    def __init__(self):
+    def __init__(self, ctx):
         options = [
-            SelectOption(label="인증", description="1일1독 인증을 진행합니다."),
+            SelectOption(label="인증", value="authentication", emoji="🔓"),
         ]
-        super().__init__(placeholder="원하시는 명령어를 선택하세요.", options=options)
+
+        super().__init__(custom_id="dok_command_select", placeholder="원하는 명령어를 선택하세요.", options=options, max_values=1)
+        self.ctx = ctx
 
     async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "인":
-            await interaction.response.send_message(f"{interaction.user.mention} 날짜를 입력해주세요. (예: 날짜: 0101)")
+        await interaction.response.defer()
+
+        if self.values[0] == "authentication":
+            asyncio.create_task(self.authentication(interaction))
+
+    async def authentication(self, interaction):
+        embed = discord.Embed(title="날짜 입력", description="날짜를 `MMdd` 형식으로 입력하세요. (예: 0101)")
+        msg = await interaction.followup.send(embed=embed)
+
+        def check(m):
+            return m.author == interaction.user and m.channel == interaction.channel
+
+        try:
+            message = await self.ctx.bot.wait_for('message', check=check, timeout=60)
+
+            date = message.content
+            if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date):
+                await interaction.channel.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
+                return
+
+            asyncio.create_task(authentication(self.ctx, date))
+
+        except asyncio.TimeoutError:
+            await interaction.channel.send("시간이 초과되었습니다. 다시 시도해주세요.")
+            return
 
             
-@bot.command(name="1일1독")
-async def one_day_one_read(ctx):
-    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요.")
+@bot.command(name='1일1독')
+async def dok_commands(ctx):
+    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention}님 원하시는 명령어를 아래에서 골라주세요.")
+    select_menu = DokCommandSelect(ctx)
     view = discord.ui.View()
-    view.add_item(DokCommandSelect())
+    view.add_item(select_menu)
     await ctx.send(embed=embed, view=view)
 
 async def authentication1(ctx, date):
