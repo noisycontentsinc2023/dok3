@@ -247,25 +247,34 @@ class Dropdown(discord.ui.Select):
     def __init__(self):
         options = [
             discord.SelectOption(label="인증", value="인증"),
-            discord.SelectOption(label="누적", value="누적"),
+            discord.SelectOption(label="누적", value="누적")
         ]
-        super().__init__(placeholder="옵션을 선택해 주세요.", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="옵션을 선택해 주세요.", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "인증":
-            await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425", ephemeral=True)
-        elif self.values[0] == "누적":
-            ctx = await bot.get_context(interaction.message, cls=Context)
-            await accumulated_auth(ctx)
+        option = self.values[0]
+        if option == "인증":
+            await interaction.response.send_message("1일1독을 인증하시려면 !인증 인증하려는 날짜를 입력해주세요! 예시)!인증 0425")
+        elif option == "누적":
+            await accumulated_auth(interaction)
             
 @bot.command(name="1일1독")
-async def one_per_day(ctx):
-    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
-
+async def show_options(ctx):
+    dropdown = Dropdown()
     view = discord.ui.View()
-    view.add_item(Dropdown())
+    view.add_item(dropdown)
 
-    await ctx.send(embed=embed, view=view)
+    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention}님 원하시는 명령어를 아래에서 골라주세요")
+    await ctx.send(embed=embed, view=view, ephemeral=True)
+
+async def accumulated_auth(interaction):
+    user = interaction.user
+    sheet5, rows = await get_sheet5()
+    existing_users = await sheet5.col_values(1)
+    
+    if str(user) not in existing_users:
+        await interaction.followup.send(f"{user.mention}님, 1일1독 기록이 없습니다")
+        return
   
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
