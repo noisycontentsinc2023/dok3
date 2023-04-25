@@ -241,6 +241,24 @@ async def find_user(username, sheet):
         print(f'find_user error: {e}')
     return cell
 
+class SelectMenuOption(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label="인증", description="1일1독 인증을 요청합니다."),
+        ]
+        super().__init__(placeholder="원하시는 명령어를 선택하세요", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        if self.values[0] == "인증":
+            await interaction.channel.send(f"{interaction.user.mention}님, 날짜를 입력해주세요. (예: 0101)")
+            
+@bot.command(name="1일1독")
+async def one_day_one_read(ctx):
+    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention}님 원하시는 명령어를 아래에서 골라주세요")
+    view = discord.ui.View()
+    view.add_item(SelectMenuOption())
+    await ctx.send(embed=embed, view=view)
+    
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
         super().__init__(style=discord.ButtonStyle.green, label="확인 ")
@@ -327,23 +345,19 @@ async def update_embed(ctx, date, msg):
             break
         
 @bot.command(name='인증')
-async def authentication(ctx, date):
+async def authentication(ctx):
+    def check(m):
+        return m.author == ctx.author and m.content.startswith('날짜: ')
+
+    await ctx.send(f"{ctx.author.mention}님, 날짜를 입력해주세요. (예: 날짜: 0101)")
+
+    msg = await bot.wait_for("message", check=check)
+
+    date = msg.content.split('날짜: ')[1]
     
     if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
         return
-    
-    sheet5, rows = await get_sheet5()
-    existing_users = await sheet5.col_values(1)
-    if str(ctx.author) in existing_users:
-        user_index = existing_users.index(str(ctx.author)) + 1
-        existing_dates = await sheet5.row_values(1)
-        if date in existing_dates:
-            date_index = existing_dates.index(date) + 1
-            cell_value = await sheet5.cell(user_index, date_index)
-            if cell_value.value == "1":
-                await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
-                return
 
     embed = discord.Embed(title="인증상태", description=f"{ctx.author.mention}님의 {date} 1일1독 인증 요청입니다")
     view = discord.ui.View()
