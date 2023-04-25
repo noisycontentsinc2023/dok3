@@ -255,8 +255,9 @@ class Dropdown(discord.ui.Select):
         if self.values[0] == "인증":
             await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425", ephemeral=True)
         elif self.values[0] == "누적":
-            await accumulated_auth(interaction)
-
+            ctx = await bot.get_context(interaction.message, cls=Context)
+            await accumulated_auth(ctx)
+            
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
     embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
