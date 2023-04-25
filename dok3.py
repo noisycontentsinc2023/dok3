@@ -269,7 +269,7 @@ async def 누적(user):
     sheet5, rows = await get_sheet5()
     existing_users = await sheet5.col_values(1)
     
-    if str(ctx.user) not in existing_users:
+    if str(user) not in existing_users:
         await ctx.send(f"{ctx.author.mention}님, 1일1독 기록이 없습니다")
         return
 
