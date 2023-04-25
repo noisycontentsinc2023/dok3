@@ -398,7 +398,7 @@ async def accumulated_auth(interaction: discord.Interaction):
         await interaction.response.send_message(f"{user.mention}님, 1일1독 기록이 없습니다", ephemeral=True)
         return
 
-    user_index = existing_users.index(str(ctx.author)) + 1
+    user_index = existing_users.index(str(user)) + 1
     total = 0
     monday, sunday = get_week_range()
     existing_dates = await sheet5.row_values(1)
@@ -412,19 +412,19 @@ async def accumulated_auth(interaction: discord.Interaction):
     overall_ranking = await sheet5.cell(user_index, 2) # Read the value of column B
     overall_ranking_value = int(overall_ranking.value)
     
-    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
+    embed = discord.Embed(title="누적 인증 현황", description=f"{user.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
     
-    if overall_ranking_value >= 10 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
-        role = ctx.guild.get_role(1040094410488172574)
-        await ctx.author.add_roles(role)
+    if overall_ranking_value >= 10 and not discord.utils.get(user.roles, id=1040094410488172574):
+        role = interaction.guild.get_role(1040094410488172574)
+        await user.add_roles(role)
         embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
 
-    if overall_ranking_value >= 30 and not discord.utils.get(ctx.author.roles, id=1040094943722606602):
-        role = ctx.guild.get_role(1040094943722606602)
-        await ctx.author.add_roles(role)
+    if overall_ranking_value >= 30 and not discord.utils.get(user.roles, id=1040094943722606602):
+        role = interaction.guild.get_role(1040094943722606602)
+        await user.add_roles(role)
         embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
 
-    await ctx.send(embed=embed)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
     
 
     
