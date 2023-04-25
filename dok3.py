@@ -289,6 +289,7 @@ class Dropdown(discord.ui.Select):
                 await user.add_roles(role)
                 embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
 
+ 
             await interaction.response.send_message(embed=embed, ephemeral=True)
             
 @bot.command(name="1일1독")
