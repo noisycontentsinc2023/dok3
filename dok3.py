@@ -252,9 +252,10 @@ class Dropdown(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if self.values[0] == "인증":
-            await interaction.response.send_message("1일1독을 인증하시려면 !인증 인증하려는 날짜를 입력해주세요! 예시)!인증 0425", ephemeral=True)
+            await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425", ephemeral=True)
         elif self.values[0] == "누적":
-            await 누적(interaction)  # interaction 객체를 전달
+            ctx = await bot.get_context(interaction.message, cls=Context)
+            await accumulated_auth(ctx)
             
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
@@ -264,43 +265,7 @@ async def one_per_day(ctx):
     view.add_item(Dropdown())
 
     await ctx.send(embed=embed, view=view)
-
-async def 누적(interaction):
-    sheet5, rows = await get_sheet5()
-    existing_users = await sheet5.col_values(1)
-    user = interaction.user
-
-    if str(user) not in existing_users:
-        await interaction.response.send_message(f"{user.mention}님, 1일1독 기록이 없습니다", ephemeral=True)
-        return
-
-    user_index = existing_users.index(str(ctx.author)) + 1
-    total = 0
-    monday, sunday = get_week_range()
-    existing_dates = await sheet5.row_values(1)
-    for date in existing_dates:
-        if date and monday.strftime('%m%d') <= date <= sunday.strftime('%m%d'):
-            date_index = existing_dates.index(date) + 1
-            cell_value = await sheet5.cell(user_index, date_index)
-            if cell_value.value:
-                total += int(cell_value.value)
-    
-    overall_ranking = await sheet5.cell(user_index, 2) # Read the value of column B
-    overall_ranking_value = int(overall_ranking.value)
-    
-    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
-    
-    if overall_ranking_value >= 10 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
-        role = ctx.guild.get_role(1040094410488172574)
-        await ctx.author.add_roles(role)
-        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
-
-    if overall_ranking_value >= 30 and not discord.utils.get(ctx.author.roles, id=1040094943722606602):
-        role = ctx.guild.get_role(1040094943722606602)
-        await ctx.author.add_roles(role)
-        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
-
-    await ctx.send(embed=embed)    
+  
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
         super().__init__(style=discord.ButtonStyle.green, label="확인 ")
@@ -421,7 +386,43 @@ def get_week_range():
     monday = today - timedelta(days=today.weekday()) #현재 날짜에서 오늘만큼의 요일을 빼서 월요일 날짜 획득
     sunday = monday + timedelta(days=6)
     return monday, sunday
+  
+@bot.command(name='누적')
+async def accumulated_auth(ctx):
+    sheet5, rows = await get_sheet5()
+    existing_users = await sheet5.col_values(1)
+    
+    if str(ctx.author) not in existing_users:
+        await ctx.send(f"{ctx.author.mention}님, 1일1독 기록이 없습니다")
+        return
 
+    user_index = existing_users.index(str(ctx.author)) + 1
+    total = 0
+    monday, sunday = get_week_range()
+    existing_dates = await sheet5.row_values(1)
+    for date in existing_dates:
+        if date and monday.strftime('%m%d') <= date <= sunday.strftime('%m%d'):
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet5.cell(user_index, date_index)
+            if cell_value.value:
+                total += int(cell_value.value)
+    
+    overall_ranking = await sheet5.cell(user_index, 2) # Read the value of column B
+    overall_ranking_value = int(overall_ranking.value)
+    
+    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
+    
+    if overall_ranking_value >= 10 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
+        role = ctx.guild.get_role(1040094410488172574)
+        await ctx.author.add_roles(role)
+        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
+
+    if overall_ranking_value >= 30 and not discord.utils.get(ctx.author.roles, id=1040094943722606602):
+        role = ctx.guild.get_role(1040094943722606602)
+        await ctx.author.add_roles(role)
+        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
+
+    await ctx.send(embed=embed)
     
 
     
