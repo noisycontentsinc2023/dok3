@@ -256,7 +256,7 @@ class Dropdown(discord.ui.Select):
             await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425", ephemeral=True)
         elif self.values[0] == "누적":
             await accumulated_auth(interaction)
-            
+
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
     embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
@@ -388,7 +388,7 @@ def get_week_range():
     return monday, sunday
   
 @bot.command(name='누적')
-async def accumulated_auth(ctx):
+async def accumulated_auth(interaction: discord.Interaction):
     user = interaction.user
     sheet5, rows = await get_sheet5()
     existing_users = await sheet5.col_values(1)
