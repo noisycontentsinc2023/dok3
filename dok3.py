@@ -255,8 +255,7 @@ class Dropdown(discord.ui.Select):
         if self.values[0] == "인증":
             await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425", ephemeral=True)
         elif self.values[0] == "누적":
-            ctx = await bot.get_context(interaction.message, cls=Context)
-            await accumulated_auth(ctx)
+            await accumulated_auth(interaction)
             
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
@@ -265,7 +264,7 @@ async def one_per_day(ctx):
     view = discord.ui.View()
     view.add_item(Dropdown())
 
-    await ctx.send(embed=embed, view=view)
+    await ctx.send(embed=embed, view=view, ephemeral=True)
   
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
@@ -390,11 +389,12 @@ def get_week_range():
   
 @bot.command(name='누적')
 async def accumulated_auth(ctx):
+    user = interaction.user
     sheet5, rows = await get_sheet5()
     existing_users = await sheet5.col_values(1)
-    
-    if str(ctx.author) not in existing_users:
-        await ctx.send(f"{ctx.author.mention}님, 1일1독 기록이 없습니다")
+
+    if str(user) not in existing_users:
+        await interaction.response.send_message(f"{user.mention}님, 1일1독 기록이 없습니다", ephemeral=True)
         return
 
     user_index = existing_users.index(str(ctx.author)) + 1
