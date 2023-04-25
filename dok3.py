@@ -241,23 +241,42 @@ async def find_user(username, sheet):
         print(f'find_user error: {e}')
     return cell
 
-class SelectMenuOption(discord.ui.Select):
+class DokCommandSelect(Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label="인증", description="1일1독 인증을 요청합니다."),
+            SelectOption(label="인증", description="1일1독 인증을 진행합니다."),
         ]
-        super().__init__(placeholder="원하시는 명령어를 선택하세요", min_values=1, max_values=1, options=options)
+        super().__init__(placeholder="원하시는 명령어를 선택하세요.", options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "인증":
-            await interaction.channel.send(f"{interaction.user.mention}님, 날짜를 입력해주세요. (예: 0101)")
+        if self.values[0] == "인":
+            await interaction.response.send_message(f"{interaction.user.mention} 날짜를 입력해주세요. (예: 날짜: 0101)")
+
             
 @bot.command(name="1일1독")
 async def one_day_one_read(ctx):
-    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention}님 원하시는 명령어를 아래에서 골라주세요")
+    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요.")
     view = discord.ui.View()
-    view.add_item(SelectMenuOption())
+    view.add_item(DokCommandSelect())
     await ctx.send(embed=embed, view=view)
+
+async def authentication1(ctx, date):
+    embed = discord.Embed(title="인증상태", description=f"{ctx.author.mention}님의 {date} 1일1독 인증 요청입니다")
+    await ctx.send(embed=embed)
+    
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    content = message.content
+    if content.startswith("날짜: "):
+        date = content[4:].strip()
+        if re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date):
+            await authentication1(message.channel, date)
+        else:
+            await message.channel.send("올바른 날짜 형식을 입력해주세요. (예: 날짜: 0101)")
+    await bot.process_commands(message)
     
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
@@ -343,7 +362,11 @@ async def update_embed(ctx, date, msg):
             await asyncio.sleep(60)
         except discord.errors.NotFound:
             break
-        
+            
+async def update_embed_for_date_input(ctx, interaction):
+    embed = discord.Embed(title="날짜 입력", description=f"{ctx.author.mention}님, 날짜를 입력해주세요. (예: 날짜: 0101)")
+    await interaction.message.edit(embed=embed)
+    
 @bot.command(name='인증')
 async def authentication(ctx):
     def check(m):
