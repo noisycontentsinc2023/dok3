@@ -509,7 +509,6 @@ class GameView(discord.ui.View):
         super().__init__(timeout=None)
         self.user = user
         self.sheet = sheet
-        self.add_item(discord.ui.Button(label="주사위 굴리기", style=discord.ButtonStyle.primary, custom_id=f"roll_dice_button_{user.id}"))
 
     @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.primary, custom_id=None)  # 수정된 부분
     async def roll_dice(self, interaction: discord.Interaction):
