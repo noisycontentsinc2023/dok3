@@ -529,6 +529,8 @@ class GameView(View):
 
 @bot.command(name='월드')
 async def create_game(ctx):
+    await ctx.message.delete()  # 명령어 삭제
+    
     thread = await ctx.channel.create_thread(name=f"게임 스레드: {ctx.author.name}", type=discord.ChannelType.private_thread)
     sheet, rows = await get_sheet6()
 
