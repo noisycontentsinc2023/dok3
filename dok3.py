@@ -255,6 +255,8 @@ class CustomSelect(discord.ui.Select):
             
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
+    await ctx.message.delete()  # 명령어 삭제
+    
     embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
 
     message = await ctx.send(embed=embed, ephemeral=True)
@@ -274,7 +276,9 @@ async def one_per_day(ctx):
 
     message = await message.edit(embed=embed, view=select_container)
 
-    
+    await asyncio.sleep(60)  # 1분 대기
+    await message.delete()  # 임베드 메시지와 셀렉트 메뉴 삭제
+
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
         super().__init__(style=discord.ButtonStyle.green, label="확인 ")
