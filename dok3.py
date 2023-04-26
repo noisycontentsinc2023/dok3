@@ -511,7 +511,7 @@ class GameView(View):
         self.sheet = sheet
 
     @discord.ui.button(label="주사위 굴리기", custom_id="roll_dice_button", style=discord.ButtonStyle.blurple)
-    async def roll_dice(self, button: Button, interaction: discord.Interaction):
+    aasync def roll_dice(self, interaction: discord.Interaction): 
         if interaction.user != self.user:
             return
 
