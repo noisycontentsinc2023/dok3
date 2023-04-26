@@ -258,6 +258,7 @@ async def one_per_day(ctx):
     await ctx.message.delete()  # 명령어 삭제
     
     embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
+    embed.set_footer(text="이 창은 1분 후 자동 삭제됩니다")
 
     message = await ctx.send(embed=embed, ephemeral=True)
 
