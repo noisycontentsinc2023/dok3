@@ -264,8 +264,8 @@ async def one_per_day(ctx):
 
     select = CustomSelect(
         options=[
-            discord.SelectOption(label="학습인증", value="학습인증", emoji="✅"),
-            discord.SelectOption(label="누적현황", value="누적현황", emoji="📊")
+            discord.SelectOption(label="학습인증", value="학습인증"),
+            discord.SelectOption(label="누적현황", value="누적현황")
         ],
         placeholder="명령어를 선택하세요",
         min_values=1,
