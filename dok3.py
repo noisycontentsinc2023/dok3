@@ -260,16 +260,16 @@ async def one_per_day(ctx):
     await ctx.send(embed=embed, components=components)
 
 @bot.event
-async def on_component(ctx: discord.ui.ComponentContext):
-    if isinstance(ctx.origin_message, discord.Message):
-        if ctx.origin_message.author.id == bot.user.id:
-            if ctx.origin_message.embeds:
-                embed = ctx.origin_message.embeds[0]
+async def on_interaction(interaction: discord.Interaction):
+    if isinstance(interaction.message, discord.Message):
+        if interaction.message.author.id == bot.user.id:
+            if interaction.message.embeds:
+                embed = interaction.message.embeds[0]
                 if embed.title == "1일1독 명령어 모음집":
-                    if ctx.selected_options[0] == "인증":
-                        await ctx.send("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425")
-                    elif ctx.selected_options[0] == "누적":
-                        await ctx.send("현재까지의 1일1독 누적 횟수를 조회하시려면 '!누적'을 입력해주세요! 예시)!누적")
+                    if interaction.data["custom_id"] == "학습인증":
+                        await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425")
+                    elif interaction.data["custom_id"] == "누적현황":
+                        await interaction.response.send_message("현재까지의 1일1독 누적 횟수를 조회하시려면 '!누적'을 입력해주세요! 예시)!누적")
 
     
 class AuthButton(discord.ui.Button):
