@@ -366,19 +366,23 @@ async def update_embed(ctx, date, msg):
             break
         
 @bot.command(name='인증')
-async def authentication(ctx):
-    def check(m):
-        return m.author == ctx.author and m.content.startswith('날짜: ')
-
-    await ctx.send(f"{ctx.author.mention}님, 날짜를 입력해주세요. (예: 날짜: 0101)")
-
-    msg = await bot.wait_for("message", check=check)
-
-    date = msg.content.split('날짜: ')[1]
+async def authentication(ctx, date):
     
     if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
         return
+    
+    sheet5, rows = await get_sheet5()
+    existing_users = await sheet5.col_values(1)
+    if str(ctx.author) in existing_users:
+        user_index = existing_users.index(str(ctx.author)) + 1
+        existing_dates = await sheet5.row_values(1)
+        if date in existing_dates:
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet5.cell(user_index, date_index)
+            if cell_value.value == "1":
+                await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
+                return
 
     embed = discord.Embed(title="인증상태", description=f"{ctx.author.mention}님의 {date} 1일1독 인증 요청입니다")
     view = discord.ui.View()
@@ -394,6 +398,50 @@ async def authentication(ctx):
 
     await bot.wait_for("interaction", check=check)
    
+    
+def get_week_range(): 
+    today = date.today() # 오늘 날짜 
+    monday = today - timedelta(days=today.weekday()) #현재 날짜에서 오늘만큼의 요일을 빼서 월요일 날짜 획득
+    sunday = monday + timedelta(days=6)
+    return monday, sunday
+
+    
+@bot.command(name='누적')
+async def accumulated_auth(ctx):
+    sheet5, rows = await get_sheet5()
+    existing_users = await sheet5.col_values(1)
+    
+    if str(ctx.author) not in existing_users:
+        await ctx.send(f"{ctx.author.mention}님, 1일1독 기록이 없습니다")
+        return
+
+    user_index = existing_users.index(str(ctx.author)) + 1
+    total = 0
+    monday, sunday = get_week_range()
+    existing_dates = await sheet5.row_values(1)
+    for date in existing_dates:
+        if date and monday.strftime('%m%d') <= date <= sunday.strftime('%m%d'):
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet5.cell(user_index, date_index)
+            if cell_value.value:
+                total += int(cell_value.value)
+    
+    overall_ranking = await sheet5.cell(user_index, 2) # Read the value of column B
+    overall_ranking_value = int(overall_ranking.value)
+    
+    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
+    
+    if overall_ranking_value >= 10 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
+        role = ctx.guild.get_role(1040094410488172574)
+        await ctx.author.add_roles(role)
+        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
+
+    if overall_ranking_value >= 30 and not discord.utils.get(ctx.author.roles, id=1040094943722606602):
+        role = ctx.guild.get_role(1040094943722606602)
+        await ctx.author.add_roles(role)
+        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
+
+    await ctx.send(embed=embed)
     
 def get_week_range(): 
     today = date.today() # 오늘 날짜 
