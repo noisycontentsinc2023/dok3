@@ -271,8 +271,6 @@ async def on_component(ctx: discord.ui.ComponentContext):
                     elif ctx.selected_options[0] == "누적":
                         await ctx.send("현재까지의 1일1독 누적 횟수를 조회하시려면 '!누적'을 입력해주세요! 예시)!누적")
 
-@bot.command(name="누적")
-async def 누적(ctx):iew)
     
 class AuthButton(discord.ui.Button):
     def __init__(self, ctx, user, date):
