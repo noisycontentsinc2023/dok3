@@ -468,7 +468,7 @@ async def find_user(username, sheet):
 async def Register(ctx):
     username = str(ctx.message.author)
     
-    sheet3, rows = await get_sheet6()
+    sheet6, rows = await get_sheet6()
 
     # Check if the user is already registered
     registered = False
@@ -517,16 +517,36 @@ class GameView(discord.ui.View):
 
         cell = await find_user(str(self.user), self.sheet)
         if cell:
-            remaining_rolls = int(await self.sheet.cell(cell.row, 2).value)
+            remaining_rolls = int(await self.sheet.cell(cell.row, 1).value)
             if remaining_rolls > 0:
-                await self.sheet.update_cell(cell.row, 2, remaining_rolls - 1)
+                await self.sheet.update_cell(cell.row, 1, remaining_rolls - 1)
                 dice_result = random.randint(1, 6)
-                # 게임보드 이동 등 게임 진행 로직 구현
+                # 주사위 결과에 따라 이동할 필드 구현
+                current_field_index = await self.get_user_field_index(cell.row)
+                next_field_index = current_field_index + dice_result
+                if next_field_index > 25:
+                    next_field_index = 25
+                await self.move_user_to_field(cell.row, next_field_index)
             else:
-                await interaction.response.send_message("더 굴릴 수 있는 주사위가 없습니다.", ephemeral=True)
+                await interaction.response.send_message("굴릴 수 있는 주사위가 없습니다.", ephemeral=True)
         else:
             await interaction.response.send_message("등록되지 않은 사용자입니다.", ephemeral=True)
 
+    async def get_user_field_index(self, row_index):
+        field_value = await self.sheet.cell(row_index, 2).value
+        if not field_value:
+            return 0
+        else:
+            return int(field_value)
+
+    async def move_user_to_field(self, row_index, field_index):
+        await self.sheet.update_cell(row_index, 2, str(field_index))
+        await self.update_game_board_embed()
+
+    async def update_game_board_embed(self):
+        # 게임 보드 업데이트
+        pass
+      
 @bot.command(name='월드')
 async def create_game(ctx):
     await ctx.message.delete()  # 명령어 삭제
