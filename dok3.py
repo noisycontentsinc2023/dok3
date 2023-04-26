@@ -504,14 +504,14 @@ descriptions = ["시작점", "도쿄", "무인도", "이벤트", "샌프란시�
                 "다카르", "리마", "카이로", "이벤트", "시카고"]
 
 
-class GameView(View):
+class GameView(discord.ui.View):
     def __init__(self, user, sheet):
         super().__init__(timeout=None)
         self.user = user
         self.sheet = sheet
-        self.add_item(self.roll_dice)
+        self.add_item(discord.ui.Button(label="주사위 굴리기", style=discord.ButtonStyle.primary, custom_id="roll_dice_button"))  
 
-    @discord.ui.button(label="주사위 굴리기", custom_id="roll_dice_button", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.primary, custom_id="roll_dice_button")
     async def roll_dice(self, interaction: discord.Interaction):  # 수정된 부분
         if interaction.user != self.user:
             return
