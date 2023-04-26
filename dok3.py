@@ -496,22 +496,21 @@ async def start(ctx):
         # 게임판 Embed 메시지 갱신
         await board_embed.edit(embed=get_board_embed(position))
 
+class RollDiceButton(discord.ui.Button):
+    def __init__(self, view: discord.ui.View):
+        super().__init__(label="주사위 굴리기", custom_id="roll_dice")
+        self.view = view
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        dice_result = random.randint(1, 6)
+        await interaction.followup.send(f"주사위 결과: {dice_result}")
+        
 class RollDiceView(discord.ui.View):
     def __init__(self):
         super().__init__()
-        self.add_item(discord.ui.Button(label="주사위 굴리기", custom_id="roll_dice", on_click=self.roll_dice_button))
-
-    async def wait_for_roll(self, user: discord.User):
-        def check(interaction: discord.Interaction):
-            return interaction.user == user and interaction.custom_id == "roll_dice"
-
-        interaction = await bot.wait_for("interaction", check=check)
-        await interaction.response.defer()
-        return interaction
-
-    async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer()
-
+        self.add_item(RollDiceButton(self))
+        
 def get_board_embed(position):
     # Embed 객체 생성
     embed = discord.Embed(title="브루마블 게임판", color=0xFF5733)
