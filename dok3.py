@@ -499,7 +499,7 @@ async def start(ctx):
 class RollDiceView(discord.ui.View):
     def __init__(self):
         super().__init__()
-        self.add_item(discord.ui.Button(label="주사위 굴리기", custom_id="roll_dice", callback=self.roll_dice_button))
+        self.add_item(discord.ui.Button(label="주사위 굴리기", custom_id="roll_dice", on_click=self.roll_dice_button))
 
     async def wait_for_roll(self, user: discord.User):
         def check(interaction: discord.Interaction):
