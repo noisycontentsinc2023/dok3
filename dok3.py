@@ -246,30 +246,39 @@ async def find_user(username, sheet):
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
     embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
-    components = [
-        [
-            discord.ui.Select(
-                options=[
-                    discord.SelectOption(label="인증", value="인증"),
-                    discord.SelectOption(label="누적", value="누적")
-                ]
-            )
-        ]
-    ]
 
-    await ctx.send(embed=embed, components=components)
+    message = await ctx.send(embed=embed)
 
-@bot.event
-async def on_interaction(interaction: discord.Interaction):
-    if isinstance(interaction.message, discord.Message):
-        if interaction.message.author.id == bot.user.id:
-            if interaction.message.embeds:
-                embed = interaction.message.embeds[0]
-                if embed.title == "1일1독 명령어 모음집":
-                    if interaction.data["custom_id"] == "학습인증":
-                        await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425")
-                    elif interaction.data["custom_id"] == "누적현황":
-                        await interaction.response.send_message("현재까지의 1일1독 누적 횟수를 조회하시려면 '!누적'을 입력해주세요! 예시)!누적")
+    select = discord.ui.Select(
+        options=[
+            discord.SelectOption(label="학습인증", value="학습인증", emoji="✅"),
+            discord.SelectOption(label="누적현황", value="누적현황", emoji="📊")
+        ],
+        placeholder="명령어를 선택하세요",
+        min_values=1,
+        max_values=1
+    )
+
+    select_container = discord.ui.View()
+    select_container.add_item(select)
+
+    message = await message.edit(view=select_container)
+
+    def check(interaction):
+        return interaction.user == ctx.author and isinstance(interaction, discord.Interaction) and interaction.data["custom_id"] == "1일1독"
+
+    try:
+        interaction = await bot.wait_for('select_option', timeout=60.0, check=check)
+    except asyncio.TimeoutError:
+        await message.edit(view=None)
+        return
+
+    if interaction.data["values"][0] == "학습인증":
+        await interaction.respond(content="1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425")
+    elif interaction.data["values"][0] == "누적현황":
+        await interaction.respond(content="현재까지의 1일1독 누적 횟수를 조회하시려면 '!누적'을 입력해주세요! 예시)!누적")
+
+    await message.edit(view=None)
 
     
 class AuthButton(discord.ui.Button):
