@@ -464,17 +464,11 @@ async def find_user(username, sheet):
     return cell
   
 # 브루마블 게임판
-board = ["START", "도쿄", "무인도", "이벤트", "4", "5", "6", "7", "8", "9", "10", 
-         "11", "이벤트", "13", "14", "15", "16", "17", "18", "19", "20", 
-         "21", "22", "이벤트", "24", "25"]
 
-# 게임판의 각 칸의 설명
-descriptions = ["시작점", "미식의 도시 도쿄! 가장 좋아하는 일본 요리를 일본어로 공유해주세요", "하루 동안 주사위를 굴릴 수 없습니다", "인벤트 버튼을 클릭하세요", "D", "E", "F", "G", "H", "I",
-                "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
-                "T", "U", "V", "W", "이벤트", "Y", "Z"]
+board = ["START", "도쿄", "무인도", "이벤트", "샌프란시스코", "런던", "뉴욕", "파리", "베를린", "시드니", "리우데자네이루",
+         "방콕", "이벤트", "몬트리올", "바르셀로나", "이스탄불", "서울", "상하이", "홍콩", "싱가포르",
+         "다카르", "리마", "카이로", "이벤트", "시카고"]
 
-
-# 봇이 명령어를 받으면 호출되는 이벤트 핸들러 함수
 @bot.command(name='월드')
 async def start(ctx):
     # 현재 위치
@@ -512,6 +506,25 @@ class RollDiceView(discord.ui.View):
     @discord.ui.button(label="주사위 굴리기", custom_id="roll_dice")
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         await self.wait_for_roll(interaction.user)
+
+def get_board_embed(position):
+    # Embed 객체 생성
+    embed = discord.Embed(title="브루마블 게임판", color=0xFF5733)
+
+    # 게임판 Embed에 Field 추가
+    for i in range(len(board)):
+        # 현재 위치에는 표시
+        if i == position:
+            embed.add_field(name=f":red_square: {board[i]}", value=f":arrow_right: {descriptions[i]}", inline=True)
+        else:
+            embed.add_field(name=board[i], value=descriptions[i], inline=True)
+
+    return embed
+
+
+# 주사위를 굴려 게임판을 이동하는 함수
+def roll_dice():
+    return random.randint(1, 6)
 
 #봇 실행
 bot.run(TOKEN)
