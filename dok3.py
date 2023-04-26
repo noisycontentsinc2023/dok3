@@ -511,7 +511,7 @@ class RollDiceView(discord.ui.View):
 
     @discord.ui.button(label="주사위 굴리기", custom_id="roll_dice")
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.wait_for_roll(interaction.user)
+        await interaction.response.defer()
 
 def get_board_embed(position):
     # Embed 객체 생성
