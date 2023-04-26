@@ -443,6 +443,75 @@ async def accumulated_auth(ctx):
 
     await ctx.send(embed=embed)
 
-    
+# 월드와이드 #
+# Set up Google Sheets worksheet
+async def get_sheet6():
+    client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
+    client = await client_manager.authorize()
+    spreadsheet = await client.open('서버기록')
+    sheet6 = await spreadsheet.worksheet('월드와이드')
+    rows = await sheet6.get_all_values()
+    return sheet6, rows 
+
+async def find_user(username, sheet):
+    cell = None
+    try:
+        cells = await sheet.findall(username)
+        if cells:
+            cell = cells[0]
+    except gspread.exceptions.APIError as e:
+        print(f'find_user error: {e}')
+    return cell
+  
+# 브루마블 게임판
+board = ["START", "도쿄", "무인도", "이벤트", "4", "5", "6", "7", "8", "9", "10", 
+         "11", "이벤트", "13", "14", "15", "16", "17", "18", "19", "20", 
+         "21", "22", "이벤트", "24", "25"]
+
+# 게임판의 각 칸의 설명
+descriptions = ["시작점", "미식의 도시 도쿄! 가장 좋아하는 일본 요리를 일본어로 공유해주세요", "하루 동안 주사위를 굴릴 수 없습니다", "인벤트 버튼을 클릭하세요", "D", "E", "F", "G", "H", "I",
+                "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
+                "T", "U", "V", "W", "이벤트", "Y", "Z"]
+
+
+# 봇이 명령어를 받으면 호출되는 이벤트 핸들러 함수
+@bot.command(name='월드')
+async def start(ctx):
+    # 현재 위치
+    position = 0
+    # 게임판 Embed 메시지 생성
+    board_embed = await ctx.send(embed=get_board_embed(position), view=RollDiceView())
+
+    while True:
+        # 버튼 클릭을 기다리는 부분
+        button_ctx = await RollDiceView.wait_for_roll(ctx.author)
+
+        # 주사위 값 계산
+        dice_value = roll_dice()
+
+        # 게임판 위치 업데이트
+        position += dice_value
+        position %= 25
+
+        # 게임판 Embed 메시지 갱신
+        await board_embed.edit(embed=get_board_embed(position))
+
+class RollDiceView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(discord.ui.Button(label="주사위 굴리기", custom_id="roll_dice"))
+
+    async def wait_for_roll(self, user: discord.User):
+        def check(interaction: discord.Interaction):
+            return interaction.user == user and interaction.custom_id == "roll_dice"
+
+        interaction = await bot.wait_for("interaction", check=check)
+        await interaction.response.defer()
+        return interaction
+
+    @discord.ui.button(label="주사위 굴리기", custom_id="roll_dice")
+    async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self.wait_for_roll(interaction.user)
+
 #봇 실행
 bot.run(TOKEN)
