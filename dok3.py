@@ -462,7 +462,35 @@ async def find_user(username, sheet):
     except gspread.exceptions.APIError as e:
         print(f'find_user error: {e}')
     return cell
-  
+
+@bot.command(name='등록')
+async def Register(ctx):
+    username = str(ctx.message.author)
+    
+    sheet3, rows = await get_sheet6()
+
+    # Check if the user is already registered
+    registered = False
+    row = 2
+    while (cell_value := (await sheet6.cell(row, 1)).value):
+        if cell_value == username:
+            registered = True
+            break
+        row += 1
+
+    if registered:
+        embed = discord.Embed(description=f"{ctx.author.mention}님, 이미 등록하셨어요!", color=0xFF0000)
+        await ctx.send(embed=embed)
+    else:
+        await sheet6.update_cell(row, 1, username)
+
+        role = discord.utils.get(ctx.guild.roles, id=1093781563508015105)
+        await ctx.author.add_roles(role)
+
+        embed = discord.Embed(description=f"{ctx.author.mention}님, 에 정상적으로 등록됐습니다!",
+                              color=0x00FF00)
+        await ctx.send(embed=embed)
+        
 # 브루마블 게임판
 
 board = ["START", "도쿄", "무인도", "이벤트", "샌프란시스코", "런던", "뉴욕", "파리", "베를린", "시드니", "리우데자네이루",
@@ -475,60 +503,40 @@ descriptions = ["시작점", "도쿄", "무인도", "이벤트", "샌프란시�
                 "다카르", "리마", "카이로", "이벤트", "시카고"]
 
 
-@bot.command(name='월드')
-async def start(ctx):
-    # 현재 위치
-    position = 0
-    # 게임판 Embed 메시지 생성
-    board_embed = await ctx.send(embed=get_board_embed(position), view=RollDiceView())
+class GameView(View):
+    def __init__(self, user, sheet):
+        super().__init__(timeout=None)
+        self.user = user
+        self.sheet = sheet
 
-    while True:
-        # 버튼 클릭을 기다리는 부분
-        button_ctx = await RollDiceView.wait_for_roll(ctx.author)
+    @discord.ui.button(label="주사위 굴리기", custom_id="roll_dice_button", style=discord.ButtonStyle.blurple)
+    async def roll_dice(self, button: Button, interaction: discord.Interaction):
+        if interaction.user != self.user:
+            return
 
-        # 주사위 값 계산
-        dice_value = roll_dice()
-
-        # 게임판 위치 업데이트
-        position += dice_value
-        position %= 25
-
-        # 게임판 Embed 메시지 갱신
-        await board_embed.edit(embed=get_board_embed(position))
-
-class RollDiceButton(discord.ui.Button):
-    def __init__(self, view: discord.ui.View):
-        super().__init__(label="주사위 굴리기", custom_id="roll_dice")
-        self.view = view
-
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        dice_result = random.randint(1, 6)
-        await interaction.followup.send(f"주사위 결과: {dice_result}")
-        
-class RollDiceView(discord.ui.View):
-    def __init__(self):
-        super().__init__()
-        self.add_item(RollDiceButton(self))
-        
-def get_board_embed(position):
-    # Embed 객체 생성
-    embed = discord.Embed(title="브루마블 게임판", color=0xFF5733)
-
-    # 게임판 Embed에 Field 추가
-    for i in range(len(board)):
-        # 현재 위치에는 표시
-        if i == position:
-            embed.add_field(name=f":red_square: {board[i]}", value=f":arrow_right: {descriptions[i]}", inline=True)
+        cell = await find_user(str(self.user), self.sheet)
+        if cell:
+            remaining_rolls = int(await self.sheet.cell(cell.row, 2).value)
+            if remaining_rolls > 0:
+                await self.sheet.update_cell(cell.row, 2, remaining_rolls - 1)
+                dice_result = random.randint(1, 6)
+                # 게임보드 이동 등 게임 진행 로직 구현
+            else:
+                await interaction.response.send_message("더 굴릴 수 있는 주사위가 없습니다.", ephemeral=True)
         else:
-            embed.add_field(name=board[i], value=descriptions[i], inline=True)
+            await interaction.response.send_message("등록되지 않은 사용자입니다.", ephemeral=True)
 
-    return embed
+@bot.command(name='월드')
+async def create_game(ctx):
+    thread = await ctx.channel.create_thread(name=f"게임 스레드: {ctx.author.name}", type=discord.ChannelType.private_thread)
+    sheet, rows = await get_sheet6()
 
+    game_board = discord.Embed(title="월드와이드 게임 보드")
+    for i in range(1, 26):
+        game_board.add_field(name=f"칸 {i}", value="게임 칸 설명", inline=True)
 
-# 주사위를 굴려 게임판을 이동하는 함수
-def roll_dice():
-    return random.randint(1, 6)
-
+    game_view = GameView(ctx.author, sheet)
+    await thread.send(embed=game_board, view=game_view)
+    
 #봇 실행
 bot.run(TOKEN)
