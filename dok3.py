@@ -560,7 +560,7 @@ class DiceRollView(View):
                     roll = random.randint(1, 6)
                     old_position = next(i for i, field in enumerate(self.ctx.board_embed.fields) if field.value == ":runner: 플레이어")
                     new_position = (old_position + roll) % 25
-                    updated_embed = move_player_position(self.ctx.board_embed, old_position, new_position)
+                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position) # 수정: 함수 이름을 update_player_position으로 변경합니다.
                     await self.ctx.board_message.edit(embed=updated_embed)
                 else:
                     await interaction.response.send_message("주사위를 모두 소진했습니다", ephemeral=True)
