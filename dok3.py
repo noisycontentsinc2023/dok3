@@ -641,10 +641,10 @@ today1 = now.strftime('%m%d')
 async def book_club_auth(ctx):
     required_role = "1097785865566175272" 
     if not any(role.id == int(required_role) for role in ctx.author.roles):  # MODIFIED: Check if the user has the required role
-    embed = discord.Embed(title='Error', description='북클럽 멤버만 인증할 수 있어요')
-    await ctx.send(embed=embed)
-    return
-      
+        embed = discord.Embed(title='Error', description='북클럽 멤버만 인증할 수 있어요')
+        await ctx.send(embed=embed)
+        return
+
     sheet7, rows = await get_sheet7()  # get_sheet3 호출 결과값 받기
     username = str(ctx.message.author)
     
