@@ -547,7 +547,6 @@ class DiceRollView(View):
     @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         user = interaction.user if hasattr(interaction, "user") else None
-
         if user is not None and user == self.ctx.author:
             sheet, _ = await get_sheet6()
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
@@ -557,13 +556,22 @@ class DiceRollView(View):
                 if rolls_left > 0:
                     await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
                     roll = random.randint(1, 6)
-                    old_position = next(i for i, field in enumerate(self.ctx.board_embed.fields) if field.value == ":runner: 플레이어")
+
+                    # 현재 "주사위 플레이어" 필드를 찾습니다
+                    old_position = None
+                    for i, field in enumerate(self.ctx.board_embed.fields):
+                        if ":runner:" in field.value:
+                            old_position = i
+                            break
+
+                    # 이동할 위치를 계산합니다
                     new_position = (old_position + roll) % 25
+
+                    # 이동한 후의 위치의 필드 값을 변경합니다
                     updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position)
-                    try:
-                        await self.ctx.board_message.edit(embed=updated_embed)
-                    except discord.HTTPException as e:
-                        print(f'roll_dice_button error: {e}')
+
+                    # 임베드를 업데이트합니다
+                    await self.ctx.board_message.edit(embed=updated_embed)
                 else:
                     await interaction.response.send_message("주사위를 모두 소진했습니다", ephemeral=True)
             else:
