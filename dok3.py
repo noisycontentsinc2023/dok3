@@ -703,7 +703,7 @@ class AuthButton3(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         required_roles = ["1003257850799341615", "1019165662364586034"]
         try:
-            user_cell = await find_user(self.username, self.sheet3)
+            user_cell = await find_user(self.username, self.sheet7)
             if user_cell is None:
                 embed = discord.Embed(title='Error', description='북클럽에 등록된 멤버가 아닙니다')
                 await interaction.response.edit_message(embed=embed, view=None)
