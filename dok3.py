@@ -513,7 +513,8 @@ class DiceRollView(View):
 
     @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        if interaction.message.author == self.ctx.author:
+        # 수정된 부분: interaction.user를 사용하도록 변경합니다.
+        if interaction.user.id == self.ctx.author.id:
             sheet, _ = await get_sheet6()
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
             cell = await find_user(full_username, sheet)
@@ -522,7 +523,6 @@ class DiceRollView(View):
                 if rolls_left > 0:
                     await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
                     roll = random.randint(1, 6)
-                    # 수정된 부분: 임베드 필드에서 ":runner: 플레이어" 값을 가진 인덱스를 찾는 방식을 변경합니다.
                     old_position = next(i for i, field in enumerate(self.ctx.board_embed.fields) if field.value == ":runner: 플레이어")
                     new_position = (old_position + roll) % 25
                     updated_embed = move_player_position(self.ctx.board_embed, old_position, new_position)
