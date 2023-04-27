@@ -684,7 +684,7 @@ async def book_club_auth(ctx):
         return
       
     # create and send the message with the button
-    embed = discord.Embed(title="북클럽 인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 북클럽 학습을 인증해주세요')
+    embed = discord.Embed(title="북클럽 인증", description=f'{ctx.author.mention}님의 북클럽 학습을 인증해주세요')
     button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View()
     view.add_item(button)
@@ -692,7 +692,7 @@ async def book_club_auth(ctx):
         
 class AuthButton3(discord.ui.Button):
     def __init__(self, ctx, username, today1, sheet7):
-        super().__init__(style=discord.ButtonStyle.green, label="미션인증")
+        super().__init__(style=discord.ButtonStyle.green, label="학습인증")
         self.ctx = ctx
         self.username = username
         self.sheet7 = sheet7
@@ -734,11 +734,11 @@ class AuthButton3(discord.ui.Button):
         self.view.clear_items()
 
         # Send a success message
-        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 북클럽 학습인증을 인증했습니다🥳"), view=None)
+        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 북클럽 학습인증을 했습니다👍"), view=None)
         self.stop_loop = True
         
 async def update_embed_auth(ctx, username, today1, sheet7):
-    embed = discord.Embed(title="", description=f' 버튼을 눌러 {ctx.author.mention}님의 북클럽 학습인증을 인증해주세요')
+    embed = discord.Embed(title="", description=f'{ctx.author.mention}님의 북클럽 학습인증을 인증해주세요')
     button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View(timeout=None)  # MODIFIED: Set timeout to None to avoid interaction failures after 3 minutes
     view.add_item(button)
@@ -778,7 +778,7 @@ async def mission_count(ctx):
     count = int((await sheet7.cell(user_cell.row, 2)).value)  # Column I is the 9th column
 
     # Send the embed message with the user's authentication count
-    embed = discord.Embed(description=f"{ctx.author.mention}님은 {count} 회 인증하셨어요!", color=0x00FF00)
+    embed = discord.Embed(description=f"{ctx.author.mention}님은 현재까지 {count} 회 인증하셨어요!", color=0x00FF00)
     await ctx.send(embed=embed)
 
     # Check if the user's count is 6 or 7 and grant the Finisher role
