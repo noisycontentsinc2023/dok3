@@ -525,7 +525,7 @@ def create_board_embed(username):
     return embed
 
 
-def update_player_position(embed, old_position, new_position):
+def update_player_position(embed, old_position, new_position, sheet, rows):
     for i, field in enumerate(embed.fields):
         if i == old_position:
             name = field.name
@@ -537,6 +537,22 @@ def update_player_position(embed, old_position, new_position):
             embed.set_field_at(i, name=name, value=value, inline=True)
         else:
             pass
+    
+    # Update roll_left in the sheet and rows
+    full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
+    cell = await find_user(full_username, sheet)
+    if cell is not None:
+        rolls_left = int(rows[cell.row - 1][1])  # Get roll_left value from rows
+        if rolls_left > 0:
+            await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
+            rolls_left -= 1  # Subtract 1 from the updated value
+    else:
+        rolls_left = -1
+    
+    # Update roll_left value in the embed
+    roll_left_field = discord.utils.get(embed.fields, name="남은 주사위")
+    roll_left_field.value = str(rolls_left) if rolls_left >= 0 else "사용자를 찾을 수 없습니다"
+    
     return embed
 
 class DiceRollView(View):
