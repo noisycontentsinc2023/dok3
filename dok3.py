@@ -577,7 +577,7 @@ async def 월드(ctx):
 
 #-----------북클럽------------#
 # Set up Google Sheets worksheet
-async def get_sheet3():  # 수정
+async def get_sheet7():  # 수정
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
     spreadsheet = await client.open('서버기록')
@@ -760,7 +760,7 @@ async def update_embed_auth(ctx, username, today1, sheet7):
 @bot.command(name='누적')
 async def mission_count(ctx):
     username = str(ctx.message.author)
-    sheet7, rows = await get_sheet()
+    sheet7, rows = await get_sheet7()
     
     # Find the user's row in the Google Sheet
     user_row = None
