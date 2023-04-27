@@ -521,7 +521,7 @@ class DiceRollView(View):
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
             cell = await find_user(full_username, sheet)
             if cell is not None:
-                rolls_left = int(cell.value)
+                rolls_left = int(await sheet.cell(cell.row, 2).value)  # 수정: rolls_left 값을 가져오는 부분이 누락되어 추가했습니다.
                 if rolls_left > 0:
                     await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
                     roll = random.randint(1, 6)
