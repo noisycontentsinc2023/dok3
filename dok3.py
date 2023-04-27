@@ -757,7 +757,7 @@ async def update_embed_auth(ctx, username, today1, sheet7):
     view.clear_items()
     await message.edit(view=view)
             
-@bot.command(name='누적')
+@bot.command(name='북클럽누적')
 async def mission_count(ctx):
     username = str(ctx.message.author)
     sheet7, rows = await get_sheet7()
@@ -775,7 +775,7 @@ async def mission_count(ctx):
         return
 
     user_cell = await sheet7.find(username)
-    count = int((await sheet7.cell(user_cell.row, 9)).value)  # Column I is the 9th column
+    count = int((await sheet7.cell(user_cell.row, 2)).value)  # Column I is the 9th column
 
     # Send the embed message with the user's authentication count
     embed = discord.Embed(description=f"{ctx.author.mention}님은 {count} 회 인증하셨어요!", color=0x00FF00)
