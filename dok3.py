@@ -336,6 +336,7 @@ async def update_embed(ctx, date, msg):
             await asyncio.sleep(60)
         except discord.errors.NotFound:
             break
+            
 class CancelButton(discord.ui.Button):
     def __init__(self, ctx):
         super().__init__(style=discord.ButtonStyle.red, label="취소")
@@ -547,19 +548,18 @@ class DiceRollView(View):
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
             cell = await find_user(full_username, sheet)
             if cell is not None:
-                rolls_left = int(await sheet.cell(cell.row, 2).value)
+                rolls_left = int(rows[cell.row-1][1])  # 수정된 부분
                 if rolls_left > 0:
-                    roll = random.randint(1, 6)  # 주사위를 굴립니다.
                     old_position = None
+                    roll = random.randint(1, 6)  # 수정된 부분
                     new_position = (old_position + roll) % 25
-                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position, sheet, rows, rolls_left - 1)
-                    await self.ctx.board_message.edit(embed=updated_embed)
+                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position, sheet, rows)  # 수정된 부분
+                    await self.ctx.board_message.edit(embed=updated_embed, view=self)  # 수정된 부분
+                    await sheet.update_cell(cell.row, 2, rolls_left - 1)  # 수정된 부분
                 else:
-                    message = f"주사위를 더 이상 굴릴 수 없습니다. 남은 횟수: {rolls_left}"
-                    await interaction.response.send_message(message, ephemeral=True)
+                    await interaction.response.send_message(f"주사위를 모두 소진했습니다. 남은 횟수: {rolls_left}", ephemeral=True)
             else:
                 await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
-
 
 @bot.command(name='월드')
 async def 월드(ctx):
