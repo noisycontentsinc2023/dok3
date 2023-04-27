@@ -11,7 +11,7 @@ from discord import Embed
 from discord import Interaction
 from discord.ext import tasks
 from discord.ext import commands
-from discord.ext.commands import Context
+from discord.ext.commands import Context, ButtonInteraction
 from discord.ui import Select
 from datetime import datetime, timedelta, date
 from discord.ui import Button, View
@@ -512,7 +512,7 @@ class DiceRollView(View):
         self.ctx = ctx
 
     @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
-    async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.ButtonInteraction):  # 수정된 부분
+    async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.ButtonInteraction): # 수정된 부분
           if interaction.user == self.ctx.author:
             sheet, _ = await get_sheet6()
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
