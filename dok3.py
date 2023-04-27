@@ -497,8 +497,20 @@ async def Register(ctx):
 
 def create_board_embed(username):
     embed = discord.Embed(title="스라밸 - 굴려서 세계속으로", description=f"{username}님의 게임보드입니다")
-    for _ in range(25):
-        embed.add_field(name="칸 이름", value="칸 설명", inline=True)
+    positions = ["첫 번째", "두 번째", "세 번째", "네 번째", "다섯 번째",
+                 "여섯 번째", "일곱 번째", "여덟 번째", "아홉 번째", "열 번째",
+                 "열한 번째", "열두 번째", "열세 번째", "열네 번째", "열다섯 번째",
+                 "열여섯 번째", "열일곱 번째", "열여덟 번째", "열아홉 번째", "스타트",
+                 "스파이크", "이름모를 칸", "칸 이름", "칸 이름", "최종 목적지"]
+    descriptions = ["스타트 지점입니다", "스파이크를 만난 당신!", "이름모를 칸", "칸 설명", "칸 설명",
+                    "여러분은 이제 ~~~를 마실 수 있습니다", "무엇인가 특별한 것이 일어나는 칸입니다",
+                    "아무 일도 일어나지 않았습니다", "스파이크를 만났습니다", "이름모를 칸",
+                    "스타트 지점입니다", "칸 설명", "칸 설명", "여러분은 이제 ~~~를 마실 수 있습니다",
+                    "무엇인가 특별한 것이 일어나는 칸입니다", "아무 일도 일어나지 않았습니다",
+                    "스파이크를 만났습니다", "이름모를 칸", "스타트 지점입니다", "칸 설명",
+                    "최종 목적지에 도착했습니다!", "끝나지 않는 칸", "칸 설명", "칸 설명", "칸 설명"]
+    for i in range(25):
+        embed.add_field(name=positions[i], value=descriptions[i], inline=True)
     return embed
 
 def move_player_position(embed, old_position, new_position):
