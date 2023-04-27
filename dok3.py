@@ -606,10 +606,17 @@ class CustomSelect(discord.ui.Select):
         elif self.values[0] == "북클럽누적":
             await interaction.response.send_message("'!북클럽누적' 현재까지 인증한 누적현황을 볼 수 있어요. 30회 인증이 확인되면 완주자 역할을 소유하게 됩니다 예시)!북클럽누적", ephemeral=True)
             
+def is_allowed_channel(channel_id):
+    allowed_channels = ["1097731096206119033", "1057567679281647706", "929917732537909288"]
+    return str(channel_id) in allowed_channels
+  
 @bot.command(name="북클럽")
 async def one_per_day(ctx):
     await ctx.message.delete()  # 명령어 삭제
-    
+    if not is_allowed_channel(ctx.channel.id):
+        await ctx.send("해당 명령어는 북클럽 채널에서만 사용할 수 있어요")
+        return
+      
     embed = discord.Embed(title="북클럽 명령어 모음집", description=f"{ctx.author.mention}님 원하시는 명령어를 아래에서 골라주세요")
     embed.set_footer(text="이 창은 1분 후 자동 삭제됩니다")
 
@@ -640,6 +647,9 @@ today1 = now.strftime('%m%d')
 @bot.command(name='북클럽인증')
 async def book_club_auth(ctx):
     required_role = "1097785865566175272" 
+    if not is_allowed_channel(ctx.channel.id):
+        await ctx.send("해당 명령어는 북클럽 채널에서만 사용할 수 있어요")
+        return
     if not any(role.id == int(required_role) for role in ctx.author.roles):  # MODIFIED: Check if the user has the required role
         embed = discord.Embed(title='Error', description='북클럽 멤버만 인증할 수 있어요')
         await ctx.send(embed=embed)
@@ -754,6 +764,9 @@ async def update_embed_auth(ctx, username, today1, sheet7):
             
 @bot.command(name='북클럽누적')
 async def mission_count(ctx):
+    if not is_allowed_channel(ctx.channel.id):
+        await ctx.send("해당 명령어는 북클럽 채널에서만 사용할 수 있어요")
+        return
     username = str(ctx.message.author)
     sheet7, rows = await get_sheet7()
     
