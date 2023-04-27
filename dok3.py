@@ -515,7 +515,8 @@ class DiceRollView(View):
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         if interaction.user == self.ctx.author:
             sheet, _ = await get_sheet6()
-            cell = await find_user(self.ctx.author.name, sheet)
+            full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
+            cell = await find_user(full_username, sheet)
             if cell is not None:
                 rolls_left = int(cell.value)
                 if rolls_left > 0:
