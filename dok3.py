@@ -573,25 +573,8 @@ class DiceRollView(View):
               else:
                   await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
 
-                    # 현재 "주사위 플레이어" 필드를 찾습니다
-                    old_position = None
-                    for i, field in enumerate(self.ctx.board_embed.fields):
-                        if ":runner:" in field.value:
-                            old_position = i
-                            break
-
-                    # 이동할 위치를 계산합니다
-                    new_position = (old_position + roll) % 25
-
-                    # 이동한 후의 위치의 필드 값을 변경합니다
-                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position)
-
                     # 임베드를 업데이트합니다
-                    await self.ctx.board_message.edit(embed=updated_embed)
-                else:
-                    await interaction.response.send_message("주사위를 모두 소진했습니다", ephemeral=True)
-            else:
-                await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
+                  await self.ctx.board_message.edit(embed=updated_embed)
 
 
 @bot.command(name='월드')
