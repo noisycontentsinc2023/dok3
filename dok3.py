@@ -525,7 +525,7 @@ def create_board_embed(username):
     return embed
 
 
-def update_player_position(embed, old_position, new_position, sheet, rows):
+def update_player_position(embed, old_position, new_position, sheet, rows, rolls_left):
     for i, field in enumerate(embed.fields):
         if i == old_position:
             name = field.name
@@ -533,19 +533,6 @@ def update_player_position(embed, old_position, new_position, sheet, rows):
             embed.set_field_at(i, name=name, value=value, inline=True)
         elif i == new_position:
             name = field.name
-            value = ":runner: " + field.value
-            embed.set_field_at(i, name=name, value=value, inline=True)
-        else:
-            pass
-    
-    # Update roll_left in the sheet and rows
-
-    
-    # Update roll_left value in the embed
-    roll_left_field = discord.utils.get(embed.fields, name="남은 주사위")
-    roll_left_field.value = str(rolls_left) if rolls_left >= 0 else "사용자를 찾을 수 없습니다"
-    
-    return embed
 
 class DiceRollView(View):
     def __init__(self, ctx):
@@ -554,27 +541,24 @@ class DiceRollView(View):
 
     @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-          user = interaction.user if hasattr(interaction, "user") else None  # 수정된 부분: user 속성이 있는지 확인하고, 없으면 None을 할당합니다.
-
-          if user is not None and user == self.ctx.author:
-              sheet, _ = await get_sheet6()
-              full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
-              cell = await find_user(full_username, sheet)
-              if cell is not None:
-                  rolls_left = int(await sheet.cell(cell.row, 2).value)
-                  if rolls_left > 0:
-                      old_position = None  # 이 줄에서 들여쓰기를 수정했습니다.
-                      new_position = (old_position + roll) % 25
-                      updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position)
-                      await self.ctx.board_message.edit(embed=updated_embed)
-                      await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
-                  else:
-                      await interaction.response.send_message("주사위를 모두 소진했습니다", ephemeral=True)
-              else:
-                  await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
-
-                    # 임베드를 업데이트합니다
-                  await self.ctx.board_message.edit(embed=updated_embed)
+        user = interaction.user if hasattr(interaction, "user") else None
+        if user is not None and user == self.ctx.author:
+            sheet, rows = await get_sheet6()
+            full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
+            cell = await find_user(full_username, sheet)
+            if cell is not None:
+                rolls_left = int(await sheet.cell(cell.row, 2).value)
+                if rolls_left > 0:
+                    roll = random.randint(1, 6)  # 주사위를 굴립니다.
+                    old_position = None
+                    new_position = (old_position + roll) % 25
+                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position, sheet, rows, rolls_left - 1)
+                    await self.ctx.board_message.edit(embed=updated_embed)
+                else:
+                    message = f"주사위를 더 이상 굴릴 수 없습니다. 남은 횟수: {rolls_left}"
+                    await interaction.response.send_message(message, ephemeral=True)
+            else:
+                await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
 
 
 @bot.command(name='월드')
