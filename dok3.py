@@ -513,7 +513,7 @@ class DiceRollView(View):
 
     @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        if interaction.user == self.ctx.author:
+        if interaction.message.author == self.ctx.author:
             sheet, _ = await get_sheet6()
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
             cell = await find_user(full_username, sheet)
