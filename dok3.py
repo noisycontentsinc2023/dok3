@@ -601,10 +601,10 @@ class CustomSelect(discord.ui.Select):
         super().__init__(**kwargs)
 
     async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "인증":
-            await interaction.response.send_message("'!인증' 명령어를 통해 북클럽 학습 인증을 할 수 있습니다. 예시)!인증", ephemeral=True)
-        elif self.values[0] == "누적":
-            await interaction.response.send_message("'누적' 현재까지 인증한 누적현황을 볼 수 있어요. 30회 인증이 확인되면 완주자 역할을 소유하게 됩니다 예시)!누적", ephemeral=True)
+        if self.values[0] == "북클럽인증":
+            await interaction.response.send_message("'!북클럽인증' 명령어를 통해 북클럽 학습 인증을 할 수 있습니다. 예시)!북클럽인증", ephemeral=True)
+        elif self.values[0] == "북클럽누적":
+            await interaction.response.send_message("'!북클럽누적' 현재까지 인증한 누적현황을 볼 수 있어요. 30회 인증이 확인되면 완주자 역할을 소유하게 됩니다 예시)!북클럽누적", ephemeral=True)
             
 @bot.command(name="북클럽")
 async def one_per_day(ctx):
@@ -617,8 +617,8 @@ async def one_per_day(ctx):
 
     select = CustomSelect(
         options=[
-            discord.SelectOption(label="인증", value="인증"),
-            discord.SelectOption(label="누적", value="누적")
+            discord.SelectOption(label="북클럽인증", value="북클럽인증"),
+            discord.SelectOption(label="북클럽누적", value="북클럽누적")
         ],
         placeholder="명령어를 선택하세요",
         min_values=1,
@@ -734,11 +734,11 @@ class AuthButton3(discord.ui.Button):
         self.view.clear_items()
 
         # Send a success message
-        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 랜덤미션을 인증했습니다🥳"), view=None)
+        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 북클럽 학습인증을 인증했습니다🥳"), view=None)
         self.stop_loop = True
         
 async def update_embed_auth(ctx, username, today1, sheet7):
-    embed = discord.Embed(title="미션 인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 미션을 인증해주세요')
+    embed = discord.Embed(title="", description=f' 버튼을 눌러 {ctx.author.mention}님의 북클럽 학습인증을 인증해주세요')
     button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View(timeout=None)  # MODIFIED: Set timeout to None to avoid interaction failures after 3 minutes
     view.add_item(button)
@@ -750,7 +750,7 @@ async def update_embed_auth(ctx, username, today1, sheet7):
         today1 = now.strftime('%m%d')
         if not button.stop_loop:
             view = discord.ui.View(timeout=None)
-            button = AuthButton2(ctx, username, sheet3)
+            button = AuthButton3(ctx, username, sheet7)
             view.add_item(button)
             await message.edit(embed=embed, view=view)
 
