@@ -701,12 +701,7 @@ class AuthButton3(discord.ui.Button):
         self.today1 = today1  # 인스턴스 변수로 today1 저장
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user == self.ctx.author:
-            # If the user is the button creator, send an error message
-            embed = discord.Embed(title='Error', description='자신이 생성한 버튼은 사용할 수 없습니다 :(')
-            await interaction.response.edit_message(embed=embed, view=None)
-            return
-
+        required_roles = ["1003257850799341615", "1019165662364586034"]
         try:
             user_cell = await find_user(self.username, self.sheet3)
             if user_cell is None:
