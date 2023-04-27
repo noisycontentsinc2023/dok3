@@ -630,12 +630,17 @@ async def one_per_day(ctx):
 
     await asyncio.sleep(60)  # 1분 대기
     await message.delete()  # 임베드 메시지와 셀렉트 메뉴 삭제
-    
+
+kst = pytz.timezone('Asia/Seoul')
+now = datetime.now(kst).replace(tzinfo=None)
+today1 = now.strftime('%m%d') 
+
 @bot.command(name='인증')
-async def nook_club_auth(ctx):
+async def book_club_auth(ctx):
     sheet7, rows = await get_sheet7()  # get_sheet3 호출 결과값 받기
     username = str(ctx.message.author)
-    # Check if the user has already authenticated today
+    
+    now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
     today1 = now.strftime('%m%d')
 
     user_row = None
@@ -649,45 +654,45 @@ async def nook_club_auth(ctx):
         await ctx.send(embed=embed)
         return
 
-    user_cell = await find_user(username, sheet3)
+    user_cell = await find_user(username, sheet7)
 
     if user_cell is None:
-        embed = discord.Embed(title='Error', description='스라밸-랜덤미션스터디에 등록된 멤버가 아닙니다')
+        embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
         await ctx.send(embed=embed)
         return
 
     today1_col = None
-    for i, col in enumerate(await sheet3.row_values(1)):
+    for i, col in enumerate(await sheet7.row_values(1)):
         if today1 in col:
             today1_col = i + 1
             break
 
     if today1_col is None:
-        embed = discord.Embed(title='Error', description='랜덤미션스터디 기간이 아닙니다')
+        embed = discord.Embed(title='Error', description='북클럽 기간이 아닙니다')
         await ctx.send(embed=embed)
         return
 
-    if (await sheet3.cell(user_cell.row, today1_col)).value == '1':
+    if (await sheet7.cell(user_cell.row, today1_col)).value == '1':
         embed = discord.Embed(title='Error', description='오늘 이미 인증을 하셨습니다')
         await ctx.send(embed=embed)
         return
       
     # create and send the message with the button
     embed = discord.Embed(title="북클럽 인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 북클럽 학습을 인증해주세요')
-    button = AuthButton2(ctx, username, today1, sheet3)
+    button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View()
     view.add_item(button)
-    await update_embed_auth(ctx, username, today1, sheet3) 
+    await update_embed_auth(ctx, username, today1, sheet7) 
         
 class AuthButton3(discord.ui.Button):
     def __init__(self, ctx, username, today1, sheet7):
-        super().__init__(style=discord.ButtonStyle.green, label="학습인증")
+        super().__init__(style=discord.ButtonStyle.green, label="미션인증")
         self.ctx = ctx
         self.username = username
-        self.today = today1
-        self.sheet3 = sheet7
+        self.sheet7 = sheet7
         self.auth_event = asyncio.Event()
         self.stop_loop = False
+        self.today1 = today1  # 인스턴스 변수로 today1 저장
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == self.ctx.author:
@@ -709,8 +714,12 @@ class AuthButton3(discord.ui.Button):
             return
 
         # Authenticate the user in the spreadsheet
-        today1_col = (await self.sheet3.find(self.today)).col
-        await self.sheet3.update_cell(user_row, today1_col, '1')
+        now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
+        self.today = now.strftime('%m%d')
+
+        # Authenticate the user in the spreadsheet
+        today1_col = (await self.sheet7.find(self.today)).col
+        await self.sheet7.update_cell(user_row, today1_col, '1')
 
         # Set the auth_event to stop the loop
         self.auth_event.set()
@@ -722,7 +731,7 @@ class AuthButton3(discord.ui.Button):
         await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 랜덤미션을 인증했습니다🥳"), view=None)
         self.stop_loop = True
         
-async def update_embed_auth(ctx, username, today1, sheet3):
+async def update_embed_auth(ctx, username, today1, sheet7):
     embed = discord.Embed(title="미션 인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 미션을 인증해주세요')
     button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View(timeout=None)  # MODIFIED: Set timeout to None to avoid interaction failures after 3 minutes
@@ -731,13 +740,16 @@ async def update_embed_auth(ctx, username, today1, sheet3):
 
     while not button.stop_loop:
         await asyncio.sleep(60)
+        now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
+        today1 = now.strftime('%m%d')
         if not button.stop_loop:
-            view = discord.ui.View(timeout=None)  # MODIFIED: Set timeout to None here as well
+            view = discord.ui.View(timeout=None)
+            button = AuthButton2(ctx, username, sheet3)
             view.add_item(button)
             await message.edit(embed=embed, view=view)
 
     view.clear_items()
-    await message.edit(view=view)  # MODIFIED: Changed msg to message
+    await message.edit(view=view)
             
 @bot.command(name='누적')
 async def mission_count(ctx):
@@ -746,18 +758,18 @@ async def mission_count(ctx):
     
     # Find the user's row in the Google Sheet
     user_row = None
-    for row in await sheet3.get_all_values():
+    for row in await sheet7.get_all_values():
         if username in row:
             user_row = row
             break
 
     if user_row is None:
-        embed = discord.Embed(title='Error', description='스라밸-랜덤미션스터디에 등록된 멤버가 아닙니다')
+        embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
         await ctx.send(embed=embed)
         return
 
-    user_cell = await sheet3.find(username)
-    count = int((await sheet3.cell(user_cell.row, 9)).value)  # Column I is the 9th column
+    user_cell = await sheet7.find(username)
+    count = int((await sheet7.cell(user_cell.row, 9)).value)  # Column I is the 9th column
 
     # Send the embed message with the user's authentication count
     embed = discord.Embed(description=f"{ctx.author.mention}님은 {count} 회 인증하셨어요!", color=0x00FF00)
@@ -769,5 +781,6 @@ async def mission_count(ctx):
         await ctx.author.add_roles(role)
         embed = discord.Embed(description="완주를 축하드립니다! 완주자 롤을 받으셨어요!", color=0x00FF00)
         await ctx.send(embed=embed)
+        
 #봇 실행
 bot.run(TOKEN)
