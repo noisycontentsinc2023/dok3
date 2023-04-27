@@ -522,7 +522,8 @@ class DiceRollView(View):
                 if rolls_left > 0:
                     await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
                     roll = random.randint(1, 6)
-                    old_position = self.ctx.board_embed.fields.index(":runner: 플레이어")
+                    # 수정된 부분: 임베드 필드에서 ":runner: 플레이어" 값을 가진 인덱스를 찾는 방식을 변경합니다.
+                    old_position = next(i for i, field in enumerate(self.ctx.board_embed.fields) if field.value == ":runner: 플레이어")
                     new_position = (old_position + roll) % 25
                     updated_embed = move_player_position(self.ctx.board_embed, old_position, new_position)
                     await self.ctx.board_message.edit(embed=updated_embed)
@@ -531,7 +532,8 @@ class DiceRollView(View):
             else:
                 await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
 
-@bot.command()
+
+@bot.command(name='월드')
 async def 월드(ctx):
     thread = await ctx.channel.create_thread(name=f"{ctx.author.name}'s 월드 게임", type=discord.ChannelType.private_thread)
     await thread.send(f"{ctx.author.mention}")
