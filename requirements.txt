@@ -4,3 +4,4 @@ google-auth
 google-auth-oauthlib
 gspread_asyncio
 requests
+pytz
