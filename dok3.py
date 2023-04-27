@@ -453,8 +453,8 @@ async def get_sheet6():
     spreadsheet = await client.open('서버기록')
     sheet6 = await spreadsheet.worksheet('월드와이드')
     rows = await sheet6.get_all_values()
-    return sheet6, rows 
-
+    return sheet6, rows
+  
 async def find_user(username, sheet):
     cell = None
     try:
@@ -526,7 +526,7 @@ def create_board_embed(username):
     return embed
 
 
-def update_player_position(embed, old_position, new_position, sheet, rows, rolls_left):
+def update_player_position(embed, old_position, new_position, sheet, rows):
     for i, field in enumerate(embed.fields):
         if i == old_position:
             name = field.name
@@ -534,6 +534,9 @@ def update_player_position(embed, old_position, new_position, sheet, rows, rolls
             embed.set_field_at(i, name=name, value=value, inline=True)
         elif i == new_position:
             name = field.name
+            value = field.value + ":runner: " + str(rows[0][0])
+            embed.set_field_at(i, name=name, value=value, inline=True)
+    return embed
 
 class DiceRollView(View):
     def __init__(self, ctx):
@@ -548,14 +551,14 @@ class DiceRollView(View):
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
             cell = await find_user(full_username, sheet)
             if cell is not None:
-                rolls_left = int(rows[cell.row-1][1])  # 수정된 부분
+                rolls_left = int(rows[cell.row-1][1])
                 if rolls_left > 0:
-                    old_position = None
-                    roll = random.randint(1, 6)  # 수정된 부분
+                    old_position = None  # 첫 번째 주사위 굴리기에서는 old_position을 None으로 초기화
+                    roll = random.randint(1, 6)
                     new_position = (old_position + roll) % 25
-                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position, sheet, rows)  # 수정된 부분
-                    await self.ctx.board_message.edit(embed=updated_embed, view=self)  # 수정된 부분
-                    await sheet.update_cell(cell.row, 2, rolls_left - 1)  # 수정된 부분
+                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position, sheet, rows)  # 이동 결과를 embed 객체에 적용
+                    await self.ctx.board_message.edit(embed=updated_embed, view=self)  # 이전 메시지와 교체
+                    await sheet.update_cell(cell.row, 2, rolls_left - 1)
                 else:
                     await interaction.response.send_message(f"주사위를 모두 소진했습니다. 남은 횟수: {rolls_left}", ephemeral=True)
             else:
