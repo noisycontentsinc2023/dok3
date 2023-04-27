@@ -637,24 +637,28 @@ kst = pytz.timezone('Asia/Seoul')
 now = datetime.now(kst).replace(tzinfo=None)
 today1 = now.strftime('%m%d') 
 
-@bot.command(name='인증')
+@bot.command(name='북클럽인증')
 async def book_club_auth(ctx):
+    required_role = "1097785865566175272" 
+    if not any(role.id == int(required_role) for role in ctx.author.roles):  # MODIFIED: Check if the user has the required role
+    embed = discord.Embed(title='Error', description='북클럽 멤버만 인증할 수 있어요')
+    await ctx.send(embed=embed)
+    return
+      
     sheet7, rows = await get_sheet7()  # get_sheet3 호출 결과값 받기
     username = str(ctx.message.author)
     
     now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
     today1 = now.strftime('%m%d')
 
+    # MODIFIED: Check if the user is in column 1, if not, add them
     user_row = None
-    for row in await sheet7.get_all_values():
+    for row_num, row in enumerate(await sheet7.get_all_values(), start=1):
         if username in row:
             user_row = row
             break
-
     if user_row is None:
-        embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
-        await ctx.send(embed=embed)
-        return
+        await sheet7.update_cell(row_num + 1, 1, username)
 
     user_cell = await find_user(username, sheet7)
 
@@ -756,7 +760,7 @@ async def update_embed_auth(ctx, username, today1, sheet7):
 @bot.command(name='누적')
 async def mission_count(ctx):
     username = str(ctx.message.author)
-    sheet7, rows = await get_sheet7()
+    sheet7, rows = await get_sheet()
     
     # Find the user's row in the Google Sheet
     user_row = None
