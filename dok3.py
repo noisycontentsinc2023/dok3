@@ -539,15 +539,7 @@ def update_player_position(embed, old_position, new_position, sheet, rows):
             pass
     
     # Update roll_left in the sheet and rows
-    full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
-    cell = await find_user(full_username, sheet)
-    if cell is not None:
-        rolls_left = int(rows[cell.row - 1][1])  # Get roll_left value from rows
-        if rolls_left > 0:
-            await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
-            rolls_left -= 1  # Subtract 1 from the updated value
-    else:
-        rolls_left = -1
+
     
     # Update roll_left value in the embed
     roll_left_field = discord.utils.get(embed.fields, name="남은 주사위")
@@ -562,16 +554,26 @@ class DiceRollView(View):
 
     @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
     async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        user = interaction.user if hasattr(interaction, "user") else None
-        if user is not None and user == self.ctx.author:
+          user = interaction.user if hasattr(interaction, "user") else None  # 수정된 부분: user 속성이 있는지 확인하고, 없으면 None을 할당합니다.
+
+          if user is not None and user == self.ctx.author:
+
             sheet, _ = await get_sheet6()
             full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
             cell = await find_user(full_username, sheet)
             if cell is not None:
-                rolls_left = int(await sheet.cell(cell.row, 2).value)
+                rolls_left = int(await sheet.cell(cell.row, 2).value)  # 수정: rolls_left 값을 가져오는 부분이 누락되어 추가했습니다.
                 if rolls_left > 0:
                     await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
                     roll = random.randint(1, 6)
+                    old_position = next(i for i, field in enumerate(self.ctx.board_embed.fields) if field.value == ":runner: 플레이어")
+                    new_position = (old_position + roll) % 25
+                    updated_embed = move_player_position(self.ctx.board_embed, old_position, new_position)
+                    await self.ctx.board_message.edit(embed=updated_embed)
+                else:
+                    await interaction.response.send_message("주사위를 모두 소진했습니다", ephemeral=True)
+            else:
+                await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
 
                     # 현재 "주사위 플레이어" 필드를 찾습니다
                     old_position = None
