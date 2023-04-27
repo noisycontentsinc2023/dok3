@@ -494,72 +494,50 @@ async def Register(ctx):
         
 # 브루마블 게임판
 
-board = ["START", "도쿄", "무인도", "이벤트", "샌프란시스코", "런던", "뉴욕", "파리", "베를린", "시드니", "리우데자네이루",
-         "방콕", "이벤트", "몬트리올", "바르셀로나", "이스탄불", "서울", "상하이", "홍콩", "싱가포르",
-         "다카르", "리마", "카이로", "이벤트", "시카고"]
 
-# 게임판의 각 칸의 설명
-descriptions = ["시작점", "도쿄", "무인도", "이벤트", "샌프란시스코", "런던", "뉴욕", "파리", "베를린", "시드니", "리우데자네이루",
-                "방콕", "이벤트", "몬트리올", "바르셀로나", "이스탄불", "서울", "상하이", "홍콩", "싱가포르",
-                "다카르", "리마", "카이로", "이벤트", "시카고"]
+def create_board_embed(username):
+    embed = discord.Embed(title="스라밸 - 굴려서 세계속으로", description=f"{username}님의 게임보드입니다")
+    for _ in range(25):
+        embed.add_field(name="칸 이름", value="칸 설명", inline=True)
+    return embed
 
+def move_player_position(embed, old_position, new_position):
+    embed.set_field_at(old_position, name="칸 이름", value="칸 설명", inline=True)
+    embed.set_field_at(new_position, name="칸 이름", value=":runner: 플레이어", inline=True)
+    return embed
 
-class GameView(discord.ui.View):
-    def __init__(self, user, sheet):
+class DiceRollView(View):
+    def __init__(self, ctx):
         super().__init__(timeout=None)
-        self.user = user
-        self.sheet = sheet
-        self.add_item(discord.ui.Button(label="주사위 굴리기", style=discord.ButtonStyle.primary, custom_id=f"roll_dice_button_{user.id}"))
+        self.ctx = ctx
 
-    async def roll_dice(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user != self.user:
-            return
-
-        cell = await find_user(str(self.user), self.sheet)
-        if cell:
-            remaining_rolls = int(await self.sheet.cell(cell.row, 1).value)
-            if remaining_rolls > 0:
-                await self.sheet.update_cell(cell.row, 1, remaining_rolls - 1)
-                dice_result = random.randint(1, 6)
-                # 주사위 결과에 따라 이동할 필드 구현
-                current_field_index = await self.get_user_field_index(cell.row)
-                next_field_index = current_field_index + dice_result
-                if next_field_index > 25:
-                    next_field_index = 25
-                await self.move_user_to_field(cell.row, next_field_index)
+    @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
+    async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if interaction.user == self.ctx.author:
+            sheet, _ = await get_sheet6()
+            cell = await find_user(self.ctx.author.name, sheet)
+            if cell is not None:
+                rolls_left = int(cell.value)
+                if rolls_left > 0:
+                    await sheet.update_cell(cell.row, cell.col, rolls_left - 1)
+                    roll = random.randint(1, 6)
+                    old_position = self.ctx.board_embed.fields.index(":runner: 플레이어")
+                    new_position = (old_position + roll) % 25
+                    updated_embed = move_player_position(self.ctx.board_embed, old_position, new_position)
+                    await self.ctx.board_message.edit(embed=updated_embed)
+                else:
+                    await interaction.response.send_message("주사위를 모두 소진했습니다", ephemeral=True)
             else:
-                await interaction.response.send_message("굴릴 수 있는 주사위가 없습니다.", ephemeral=True)
-        else:
-            await interaction.response.send_message("등록되지 않은 사용자입니다.", ephemeral=True)
+                await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
 
-    async def get_user_field_index(self, row_index):
-        field_value = await self.sheet.cell(row_index, 2).value
-        if not field_value:
-            return 0
-        else:
-            return int(field_value)
-
-    async def move_user_to_field(self, row_index, field_index):
-        await self.sheet.update_cell(row_index, 2, str(field_index))
-        await self.update_game_board_embed()
-
-    async def update_game_board_embed(self):
-        # 게임 보드 업데이트
-        pass
-      
-@bot.command(name='월드')
-async def create_game(ctx):
-    await ctx.message.delete()  # 명령어 삭제
-    
-    thread = await ctx.channel.create_thread(name=f"게임 스레드: {ctx.author.name}", type=discord.ChannelType.private_thread)
-    sheet, rows = await get_sheet6()
-
-    game_board = discord.Embed(title="월드와이드 게임 보드")
-    for i in range(1, 26):
-        game_board.add_field(name=f"칸 {i}", value="게임 칸 설명", inline=True)
-
-    game_view = GameView(ctx.author, sheet)
-    await thread.send(embed=game_board, view=game_view)
+@bot.command()
+async def 월드(ctx):
+    thread = await ctx.channel.create_thread(name=f"{ctx.author.name}'s 월드 게임", type=discord.ChannelType.private_thread)
+    await thread.send(f"{ctx.author.mention}")
+    board_embed = create_board_embed(ctx.author.mention)
+    ctx.board_embed = board_embed  # Store the embed in the context to access it later
+    dice_roll_view = DiceRollView(ctx)
+    ctx.board_message = await thread.send(embed=board_embed, view=dice_roll_view)
     
 #봇 실행
 bot.run(TOKEN)
