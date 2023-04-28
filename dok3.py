@@ -711,7 +711,6 @@ class AuthButton3(discord.ui.Button):
         self.today1 = today1  # 인스턴스 변수로 today1 저장
 
     async def callback(self, interaction: discord.Interaction):
-        required_roles = ["1003257850799341615", "1019165662364586034"]
         try:
             user_cell = await find_user(self.username, self.sheet7)
             if user_cell is None:
