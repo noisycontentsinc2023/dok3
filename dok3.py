@@ -751,18 +751,18 @@ class AuthButton3(discord.ui.Button):
         
 async def update_embed_auth(ctx, username, today1, sheet7):
     embed = discord.Embed(title="", description=f'{ctx.author.mention}님의 북클럽 학습인증을 인증해주세요')
-    button = AuthButton3(ctx, username, today1, sheet7)
-    view = discord.ui.View(timeout=None)  # MODIFIED: Set timeout to None to avoid interaction failures after 3 minutes
+    button = AuthButton3(ctx, username, today1, sheet7)  # Add the missing today1 argument
+    view = discord.ui.View(timeout=None)
     view.add_item(button)
     message = await ctx.send(embed=embed, view=view)
 
     while not button.stop_loop:
         await asyncio.sleep(60)
-        now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
+        now = datetime.now(kst).replace(tzinfo=None)
         today1 = now.strftime('%m%d')
         if not button.stop_loop:
             view = discord.ui.View(timeout=None)
-            button = AuthButton3(ctx, username, sheet7)
+            button = AuthButton3(ctx, username, today1, sheet7)  # Add the missing today1 argument
             view.add_item(button)
             await message.edit(embed=embed, view=view)
 
