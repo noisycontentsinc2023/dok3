@@ -434,7 +434,12 @@ async def accumulated_auth(ctx):
     overall_ranking_value = int(overall_ranking.value)
     
     embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
-    
+
+    if overall_ranking_value >= 1 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
+        role = ctx.guild.get_role(1040094410488172574)
+        await ctx.author.add_roles(role)
+        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
+        
     if overall_ranking_value >= 10 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
         role = ctx.guild.get_role(1040094410488172574)
         await ctx.author.add_roles(role)
@@ -712,17 +717,17 @@ class AuthButton3(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user.id == self.ctx.author.id:
-            await interaction.response.send_message("Unable to verify your learning. Ask another book club member.", ephemeral=True)
+            await interaction.response.send_message("본인의 학습인증은 직접 인증할 수 없습니다. 다른 분이 확인하실때까지 잠시만 기다려주세요!", ephemeral=True)
             return
         try:
             user_cell = await find_user(self.username, self.sheet7)
             if user_cell is None:
-                embed = discord.Embed(title='Error', description='You are not a registered member of the book club')
+                embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
                 await interaction.response.edit_message(embed=embed, view=None)
                 return
             user_row = user_cell.row
         except gspread.exceptions.CellNotFound:
-            embed = discord.Embed(title='Error', description='You are not a registered member of the book club')
+            embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
