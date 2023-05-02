@@ -711,15 +711,18 @@ class AuthButton3(discord.ui.Button):
         self.today1 = today1  # 인스턴스 변수로 today1 저장
 
     async def callback(self, interaction: discord.Interaction):
+        if interaction.user.id == self.ctx.author.id:
+            await interaction.response.send_message("Unable to verify your learning. Ask another book club member.", ephemeral=True)
+            return
         try:
             user_cell = await find_user(self.username, self.sheet7)
             if user_cell is None:
-                embed = discord.Embed(title='Error', description='북클럽에 등록된 멤버가 아닙니다')
+                embed = discord.Embed(title='Error', description='You are not a registered member of the book club')
                 await interaction.response.edit_message(embed=embed, view=None)
                 return
             user_row = user_cell.row
         except gspread.exceptions.CellNotFound:
-            embed = discord.Embed(title='Error', description='북클럽에 등록된 멤버가 아닙니다')
+            embed = discord.Embed(title='Error', description='You are not a registered member of the book club')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
