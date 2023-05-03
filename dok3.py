@@ -742,7 +742,7 @@ class AuthButton4(discord.ui.Button):
         self.stop_loop = False  # Add the stop_loop attribute
     
     async def callback(self, interaction: discord.Interaction):
-        user_roles = [role.id for role in interaction.user.roles]
+        user_roles = [str(role.id) for role in interaction.user.roles] # 아이디 값을 문자열로 변경
         allowed_roles = ["1019165662364586034", "1003257850799341615"]
         if interaction.user.id == self.ctx.author.id:
             await interaction.response.send_message("본인의 학습인증은 직접 인증할 수 없습니다. 다른 분이 확인하실때까지 잠시만 기다려주세요!", ephemeral=True)
