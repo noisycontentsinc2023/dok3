@@ -707,7 +707,7 @@ class CustomSelect(discord.ui.Select):
             await interaction.response.send_message("현재까지의 슬독생 누적 인증 횟수를 조회하시려면 '!슬독생누적'을 입력해주세요! 예시)생슬독생누적", ephemeral=True)
             
 @bot.command(name="슬독생")
-async def one_per_day(ctx):
+async def dok_study(ctx):
     await ctx.message.delete()  # 명령어 삭제
     
     embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
@@ -824,7 +824,7 @@ async def update_embed4(ctx, date, msg):
             break
         
 @bot.command(name='슬독생인증')
-async def authentication4(ctx, date):
+async def sul_auth(ctx, date):
     
     if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
@@ -865,7 +865,7 @@ def get_week_range():
 
     
 @bot.command(name='슬독생누적')
-async def accumulated_auth4(ctx):
+async def sul_count(ctx):
     sheet8, rows = await get_sheet8()
     existing_users = await sheet8.col_values(1)
     
