@@ -684,7 +684,7 @@ async def get_sheet5():
     spreadsheet = await client.open('서버기록')
     sheet8 = await spreadsheet.worksheet('슬독생')
     rows = await sheet8.get_all_values()
-    return sheet5, rows 
+    return sheet8, rows 
 
 async def find_user(username, sheet):
     cell = None
@@ -824,7 +824,7 @@ async def update_embed4(ctx, date, msg):
             break
         
 @bot.command(name='슬독생인증')
-async def authentication(ctx, date):
+async def authentication4(ctx, date):
     
     if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
@@ -876,7 +876,7 @@ async def accumulated_auth4(ctx):
     user_index = existing_users.index(str(ctx.author)) + 1
     total = 0
     monday, sunday = get_week_range()
-    existing_dates = await sheet5.row_values(1)
+    existing_dates = await sheet8.row_values(1)
     for date in existing_dates:
         if date and monday.strftime('%m%d') <= date <= sunday.strftime('%m%d'):
             date_index = existing_dates.index(date) + 1
