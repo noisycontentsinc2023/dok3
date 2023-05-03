@@ -452,134 +452,6 @@ async def accumulated_auth(ctx):
 
     await ctx.send(embed=embed)
 
-# 월드와이드 #
-# Set up Google Sheets worksheet
-async def get_sheet6():
-    client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
-    client = await client_manager.authorize()
-    spreadsheet = await client.open('서버기록')
-    sheet6 = await spreadsheet.worksheet('월드와이드')
-    rows = await sheet6.get_all_values()
-    return sheet6, rows
-  
-async def find_user(username, sheet):
-    cell = None
-    try:
-        cells = await sheet.findall(username)
-        if cells:
-            cell = cells[0]
-    except gspread.exceptions.APIError as e:
-        print(f'find_user error: {e}')
-    return cell
-
-@bot.command(name='')
-async def Register(ctx):
-    username = str(ctx.message.author)
-    
-    sheet6, rows = await get_sheet6()
-
-    # Check if the user is already registered
-    registered = False
-    row = 2
-    while (cell_value := (await sheet6.cell(row, 1)).value):
-        if cell_value == username:
-            registered = True
-            break
-        row += 1
-
-    if registered:
-        embed = discord.Embed(description=f"{ctx.author.mention}님, 이미 등록하셨어요!", color=0xFF0000)
-        await ctx.send(embed=embed)
-    else:
-        await sheet6.update_cell(row, 1, username)
-
-        role = discord.utils.get(ctx.guild.roles, id=1093781563508015105)
-        await ctx.author.add_roles(role)
-
-        embed = discord.Embed(description=f"{ctx.author.mention}님, 에 정상적으로 등록됐습니다!",
-                              color=0x00FF00)
-        await ctx.send(embed=embed)
-        
-# 브루마블 게임판
-
-
-def create_board_embed(username):
-    embed = discord.Embed(title="스라밸 - 굴려서 세계속으로", description=f"{username}님의 게임보드입니다")
-    embed.add_field(name="1", value="칸 설명", inline=True)
-    embed.add_field(name="2", value="칸 설명", inline=True)
-    embed.add_field(name="3", value="칸 설명", inline=True)
-    embed.add_field(name="4", value="칸 설명", inline=True)
-    embed.add_field(name="5", value="칸 설명", inline=True)
-    embed.add_field(name="6", value="칸 설명", inline=True)
-    embed.add_field(name="7", value="칸 설명", inline=True)
-    embed.add_field(name="8", value="칸 설명", inline=True)
-    embed.add_field(name="9", value="칸 설명", inline=True)
-    embed.add_field(name="10", value="칸 설명", inline=True)
-    embed.add_field(name="11", value="칸 설명", inline=True)
-    embed.add_field(name="12", value="칸 설명", inline=True)
-    embed.add_field(name="13", value="칸 설명", inline=True)
-    embed.add_field(name="14", value="칸 설명", inline=True)
-    embed.add_field(name="15", value="칸 설명", inline=True)
-    embed.add_field(name="16", value="칸 설명", inline=True)
-    embed.add_field(name="17", value="칸 설명", inline=True)
-    embed.add_field(name="18", value="칸 설명", inline=True)
-    embed.add_field(name="19", value="칸 설명", inline=True)
-    embed.add_field(name="20", value="칸 설명", inline=True)
-    embed.add_field(name="21", value="칸 설명", inline=True)
-    embed.add_field(name="22", value="칸 설명", inline=True)
-    embed.add_field(name="23", value="칸 설명", inline=True)
-    embed.add_field(name="24", value="칸 설명", inline=True)
-    embed.add_field(name="25", value="칸 설명", inline=True)
-    return embed
-
-
-def update_player_position(embed, old_position, new_position, sheet, rows):
-    for i, field in enumerate(embed.fields):
-        if i == old_position:
-            name = field.name
-            value = field.value.replace(":runner: ", "")
-            embed.set_field_at(i, name=name, value=value, inline=True)
-        elif i == new_position:
-            name = field.name
-            value = field.value + ":runner: " + str(rows[0][0])
-            embed.set_field_at(i, name=name, value=value, inline=True)
-    return embed
-
-class DiceRollView(View):
-    def __init__(self, ctx):
-        super().__init__(timeout=None)
-        self.ctx = ctx
-
-    @discord.ui.button(label="주사위 굴리기", style=discord.ButtonStyle.blurple)
-    async def roll_dice_button(self, button: discord.ui.Button, interaction: discord.Interaction):
-        user = interaction.user if hasattr(interaction, "user") else None
-        if user is not None and user == self.ctx.author:
-            sheet, rows = await get_sheet6()
-            full_username = f"{self.ctx.author.name}#{self.ctx.author.discriminator}"
-            cell = await find_user(full_username, sheet)
-            if cell is not None:
-                rolls_left = int(rows[cell.row-1][1])
-                if rolls_left > 0:
-                    old_position = None  # 첫 번째 주사위 굴리기에서는 old_position을 None으로 초기화
-                    roll = random.randint(1, 6)
-                    new_position = (old_position + roll) % 25
-                    updated_embed = update_player_position(self.ctx.board_embed, old_position, new_position, sheet, rows)  # 이동 결과를 embed 객체에 적용
-                    await self.ctx.board_message.edit(embed=updated_embed, view=self)  # 이전 메시지와 교체
-                    await sheet.update_cell(cell.row, 2, rolls_left - 1)
-                else:
-                    await interaction.response.send_message(f"주사위를 모두 소진했습니다. 남은 횟수: {rolls_left}", ephemeral=True)
-            else:
-                await interaction.response.send_message("사용자를 찾을 수 없습니다", ephemeral=True)
-
-@bot.command(name='월드')
-async def 월드(ctx):
-    thread = await ctx.channel.create_thread(name=f"{ctx.author.name}'s 월드 게임", type=discord.ChannelType.private_thread)
-    await thread.send(f"{ctx.author.mention}")
-    board_embed = create_board_embed(ctx.author.mention)
-    ctx.board_embed = board_embed  # Store the embed in the context to access it later
-    dice_roll_view = DiceRollView(ctx)
-    ctx.board_message = await thread.send(embed=board_embed, view=dice_roll_view)
-
 #-----------북클럽------------#
 # Set up Google Sheets worksheet
 async def get_sheet7():  # 수정
@@ -802,6 +674,221 @@ async def mission_count(ctx):
         await ctx.author.add_roles(role)
         embed = discord.Embed(description="완주를 축하드립니다! 완주자 롤을 받으셨어요!", color=0x00FF00)
         await ctx.send(embed=embed)
+
+#------------------------------------------------슬독------------------------------------------------------# 
+
+# Set up Google Sheets worksheet
+async def get_sheet5():
+    client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
+    client = await client_manager.authorize()
+    spreadsheet = await client.open('서버기록')
+    sheet8 = await spreadsheet.worksheet('슬독생')
+    rows = await sheet8.get_all_values()
+    return sheet5, rows 
+
+async def find_user(username, sheet):
+    cell = None
+    try:
+        cells = await sheet.findall(username)
+        if cells:
+            cell = cells[0]
+    except gspread.exceptions.APIError as e:
+        print(f'find_user error: {e}')
+    return cell
+
+class CustomSelect(discord.ui.Select):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    async def callback(self, interaction: discord.Interaction):
+        if self.values[0] == "슬독생학습인증":
+            await interaction.response.send_message("슬독생 '!슬독생인증 인증하려는 날짜'를 입력해주세요! 예시)!슬독생인증 0425", ephemeral=True)
+        elif self.values[0] == "슬독생누적현황":
+            await interaction.response.send_message("현재까지의 슬독생 누적 인증 횟수를 조회하시려면 '!슬독생누적'을 입력해주세요! 예시)생슬독생누적", ephemeral=True)
+            
+@bot.command(name="슬독생")
+async def one_per_day(ctx):
+    await ctx.message.delete()  # 명령어 삭제
+    
+    embed = discord.Embed(title="1일1독 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
+    embed.set_footer(text="이 창은 1분 후 자동 삭제됩니다")
+
+    message = await ctx.send(embed=embed, ephemeral=True)
+
+    select = CustomSelect(
+        options=[
+            discord.SelectOption(label="슬독생학습인증", value="슬독생학습인증"),
+            discord.SelectOption(label="슬독생누적현황", value="슬독생누적현황")
+        ],
+        placeholder="명령어를 선택하세요",
+        min_values=1,
+        max_values=1
+    )
+
+    select_container = discord.ui.View()
+    select_container.add_item(select)
+
+    message = await message.edit(embed=embed, view=select_container)
+
+    await asyncio.sleep(60)  # 1분 대기
+    await message.delete()  # 임베드 메시지와 셀렉트 메뉴 삭제
+
+class AuthButton4(discord.ui.Button):
+    def __init__(self, ctx, user, date):
+        super().__init__(style=discord.ButtonStyle.green, label="확인 ")
+        self.ctx = ctx
+        self.user = user
+        self.date = date
+        self.stop_loop = False  # Add the stop_loop attribute
+    
+    async def callback(self, interaction: discord.Interaction):
+        user_roles = [role.id for role in interaction.user.roles]
+        allowed_roles = ["1019165662364586034", "1003257850799341615"]
+        if interaction.user.id == self.ctx.author.id:
+            await interaction.response.send_message("본인의 학습인증은 직접 인증할 수 없습니다. 다른 분이 확인하실때까지 잠시만 기다려주세요!", ephemeral=True)
+            return
+        elif not set(allowed_roles).intersection(set(user_roles)):
+            await interaction.response.send_message("이 버튼을 클릭할 권한이 없습니다.", ephemeral=True)
+            return
+        sheet8, rows = await get_sheet8()
+        existing_users = await sheet8.col_values(1)
+        if str(self.user) not in existing_users:
+            empty_row = len(existing_users) + 2
+            await sheet8.update_cell(empty_row, 1, str(self.user))  # A열에서 2행부터 입력
+            existing_dates = await sheet8.row_values(1)
+            if self.date not in existing_dates:
+                empty_col = len(existing_dates) + 1
+                await sheet8.update_cell(1, empty_col, self.date)
+                await sheet8.update_cell(empty_row, empty_col, "1")  # 날짜에 맞는 셀에 1 입력
+            else:
+                col = existing_dates.index(self.date) + 1
+                await sheet8.update_cell(empty_row, col, "1")  # 날짜에 맞는 셀에 1 입력
+        else:
+            index = existing_users.index(str(self.user)) + 1
+            existing_dates = await sheet8.row_values(1)
+            if self.date not in existing_dates:
+                empty_col = len(existing_dates) + 1
+                await sheet8.update_cell(1, empty_col, self.date)
+                await sheet8.update_cell(index, empty_col, "1")  # 날짜에 맞는 셀에 1 입력
+            else:
+                col = existing_dates.index(self.date) + 1
+                await sheet8.update_cell(index, col, "1")  # 날짜에 맞는 셀에 1 입력
+        await interaction.message.edit(embed=discord.Embed(title="인증상황", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 {self.date} 슬독생을 인증했습니다👍"), view=None)
+        self.stop_loop = True
+
+async def update_embed(ctx, date, msg):
+    button = AuthButton4(ctx, ctx.author, date) # Move button creation outside of the loop
+    while True:
+        try:
+            if button.stop_loop: # Check if stop_loop is True before updating the message
+                break
+
+            view = discord.ui.View(timeout=None)
+            view.add_item(button)
+            view.add_item(CancelButton(ctx))
+
+            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date} 슬독생 인증 요청입니다")
+            await msg.edit(embed=embed, view=view)
+            await asyncio.sleep(60)
+        except discord.errors.NotFound:
+            break
+            
+class CancelButton4(discord.ui.Button):
+    def __init__(self, ctx):
+        super().__init__(style=discord.ButtonStyle.red, label="취소")
+        self.ctx = ctx
+        self.stop_loop = False  # Add the stop_loop attribute
+    
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.author.id != self.ctx.author.id:
+            # Interaction was not initiated by the same user who invoked the command
+            await interaction.response.send_message("You cannot use this button.", ephemeral=True)
+            return
+
+async def update_embed4(ctx, date, msg):
+    button = AuthButton4(ctx, ctx.author, date) # Move button creation outside of the loop
+    cancel = CancelButton4(ctx)  # Create a CancelButton instance
+    while True:
+        try:
+            if button.stop_loop or cancel.stop_loop: # Check if any button's stop_loop is True before updating the message
+                break
+
+            view = discord.ui.View(timeout=None)
+            view.add_item(button)
+            view.add_item(cancel)  # Add the CancelButton to the view
+
+            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date}인증 요청입니다")
+            await msg.edit(embed=embed, view=view)
+            await asyncio.sleep(60)
+        except discord.errors.NotFound:
+            break
         
+@bot.command(name='슬독생인증')
+async def authentication(ctx, date):
+    
+    if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
+        await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
+        return
+    
+    sheet8, rows = await get_sheet8()
+    existing_users = await sheet8.col_values(1)
+    if str(ctx.author) in existing_users:
+        user_index = existing_users.index(str(ctx.author)) + 1
+        existing_dates = await sheet8.row_values(1)
+        if date in existing_dates:
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet8.cell(user_index, date_index)
+            if cell_value.value == "1":
+                await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
+                return
+
+    embed = discord.Embed(title="인증상태", description=f"{ctx.author.mention}님의 {date} 슬독생 인증 요청입니다")
+    view = discord.ui.View()
+    button = AuthButton4(ctx, ctx.author, date)
+    view.add_item(button)
+    view.add_item(CancelButton(ctx)) # Add the CancelButton to the view
+    msg = await ctx.send(embed=embed, view=view)
+    
+    asyncio.create_task(update_embed(ctx, date, msg))
+
+    def check(interaction: discord.Interaction):
+        return interaction.message.id == msg.id and interaction.data.get("component_type") == discord.ComponentType.button.value
+
+    await bot.wait_for("interaction", check=check)
+   
+    
+def get_week_range(): 
+    today = date.today() # 오늘 날짜 
+    monday = today - timedelta(days=today.weekday()) #현재 날짜에서 오늘만큼의 요일을 빼서 월요일 날짜 획득
+    sunday = monday + timedelta(days=6)
+    return monday, sunday
+
+    
+@bot.command(name='슬독생누적')
+async def accumulated_auth4(ctx):
+    sheet8, rows = await get_sheet8()
+    existing_users = await sheet8.col_values(1)
+    
+    if str(ctx.author) not in existing_users:
+        await ctx.send(f"{ctx.author.mention}님,기록이 없습니다")
+        return
+
+    user_index = existing_users.index(str(ctx.author)) + 1
+    total = 0
+    monday, sunday = get_week_range()
+    existing_dates = await sheet5.row_values(1)
+    for date in existing_dates:
+        if date and monday.strftime('%m%d') <= date <= sunday.strftime('%m%d'):
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet8.cell(user_index, date_index)
+            if cell_value.value:
+                total += int(cell_value.value)
+    
+    overall_ranking = await sheet8.cell(user_index, 2) # Read the value of column B
+    
+    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 누적 인증 횟수는 {overall_ranking_value}회 입니다.")
+
+    await ctx.send(embed=embed)
+    
 #봇 실행
 bot.run(TOKEN)
