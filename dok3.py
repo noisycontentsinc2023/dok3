@@ -678,7 +678,7 @@ async def mission_count(ctx):
 #------------------------------------------------슬독------------------------------------------------------# 
 
 # Set up Google Sheets worksheet
-async def get_sheet5():
+async def get_sheet8():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
     spreadsheet = await client.open('서버기록')
