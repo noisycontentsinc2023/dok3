@@ -550,7 +550,7 @@ async def book_club_auth(ctx):
     # create and send the message with the button
     await update_embed_book_auth(ctx, username, today1, sheet7)
         
-class AuthButton2(discord.ui.Button):
+class AuthButton3(discord.ui.Button):
     def __init__(self, ctx, username, today1, sheet7):
         super().__init__(style=discord.ButtonStyle.green, label="학습인증")
         self.ctx = ctx
@@ -598,7 +598,7 @@ class AuthButton2(discord.ui.Button):
 
 async def update_embed_book_auth(ctx, username, today1, sheet7):
     embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 학습을 인증해주세요')
-    button = AuthButton2(ctx, username, today1, sheet7)
+    button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View(timeout=None)
     view.add_item(button)
     message = await ctx.send(embed=embed, view=view)
@@ -609,12 +609,9 @@ async def update_embed_book_auth(ctx, username, today1, sheet7):
         today1 = now.strftime('%m%d')
         if not button.stop_loop:
             view = discord.ui.View(timeout=None)
-            button = AuthButton2(ctx, username, today1, sheet7)
+            button = AuthButton3(ctx, username, today1, sheet7)
             view.add_item(button)
             await message.edit(embed=embed, view=view)
-
-    view.clear_items()
-    await message.edit(view=view)
 
     view.clear_items()
     await message.edit(view=view)
