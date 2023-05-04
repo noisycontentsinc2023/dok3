@@ -868,7 +868,7 @@ class CustomSelect(discord.ui.Select):
             await interaction.response.send_message("현재까지의 문법스터디 누적 인증 횟수를 조회하시려면 '!문법누적'을 입력해주세요! 예시)!문법누적", ephemeral=True)
             
 @bot.command(name="문법")
-async def dok_study(ctx):
+async def gra_study(ctx):
     await ctx.message.delete()  # 명령어 삭제
     
     embed = discord.Embed(title="문법스터디 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
@@ -997,7 +997,7 @@ def get_week_range():
 
     
 @bot.command(name='문법누적')
-async def sul_count(ctx):
+async def gra_count(ctx):
     sheet9, rows = await get_sheet9()
     existing_users = await sheet9.col_values(1)
     
