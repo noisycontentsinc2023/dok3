@@ -2,6 +2,7 @@ discord==2.2.2
 discord.py==2.2.2
 google-auth
 google-auth-oauthlib
+gspread
 gspread_asyncio
 requests
 pytz
