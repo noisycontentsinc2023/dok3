@@ -547,10 +547,6 @@ async def book_club_auth(ctx):
         return
       
     # create and send the message with the button
-    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 북클럽 학습인증을 해주세요')
-    button = AuthButton2(ctx, username, today1, sheet7)
-    view = discord.ui.View()
-    view.add_item(button)
     await update_embed_book_auth(ctx, username, today1, sheet7)
         
 class AuthButton2(discord.ui.Button):
