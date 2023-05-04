@@ -573,7 +573,7 @@ class AuthButton3(discord.ui.Button):
             return
 
         try:
-            user_cell = await find_user(self.username, self.sheet3)
+            user_cell = await find_user(self.username, self.sheet7)
             if user_cell is None:
                 embed = discord.Embed(title='오류', description='2023 북클럽에 등록된 멤버가 아닙니다')
                 await interaction.response.edit_message(embed=embed, view=None)
