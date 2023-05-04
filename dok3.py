@@ -347,9 +347,9 @@ class CancelButton(discord.ui.Button):
         self.stop_loop = False  # Add the stop_loop attribute
     
     async def callback(self, interaction: discord.Interaction):
-        if interaction.author.id != self.ctx.author.id:
+        if interaction.user.id != self.ctx.author.id:
             # Interaction was not initiated by the same user who invoked the command
-            await interaction.response.send_message("You cannot use this button.", ephemeral=True)
+            await interaction.response.send_message("본인의 메시지만 취소할 수 있어요", ephemeral=True)
             return
         await interaction.message.delete()
         
