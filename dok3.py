@@ -950,7 +950,7 @@ class CancelButton5(discord.ui.Button):
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
 
-async def update_embed_(ctx, user, date):
+async def update_embed_gra(ctx, user, date):
     button = AuthButton5(ctx, user, date) # Move button creation outside of the loop
     cancel = CancelButton5(ctx)  # Create a CancelButton instance
     while True:
