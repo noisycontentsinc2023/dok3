@@ -527,18 +527,17 @@ async def book_club_auth(ctx):
     if not is_allowed_channel(ctx.channel.id):
         await ctx.send("해당 명령어는 북클럽 채널에서만 사용할 수 있어요")
         return
-    if not any(role.id == int(required_role) for role in ctx.author.roles):  # MODIFIED: Check if the user has the required role
+    if not any(role.id == int(required_role) for role in ctx.author.roles):
         embed = discord.Embed(title='Error', description='북클럽 멤버만 인증할 수 있어요')
         await ctx.send(embed=embed)
         return
 
-    sheet7, rows = await get_sheet7()  # get_sheet3 호출 결과값 받기
+    sheet7, rows = await get_sheet7()
     username = str(ctx.message.author)
     
-    now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
+    now = datetime.now(kst).replace(tzinfo=None)
     today1 = now.strftime('%m%d')
 
-    # MODIFIED: Check if the user is in column 1, if not, add them
     user_row = None
     for row_num, row in enumerate(await sheet7.get_all_values(), start=1):
         if username in row:
@@ -575,7 +574,7 @@ async def book_club_auth(ctx):
     button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View()
     view.add_item(button)
-    await update_embed_auth(ctx, username, today1, sheet7) 
+    await ctx.send(embed=embed, view=view)
         
 class AuthButton3(discord.ui.Button):
     def __init__(self, ctx, username, today1, sheet7):
@@ -632,6 +631,7 @@ async def update_embed_auth(ctx, username, today1, sheet7):
         await asyncio.sleep(60)
         now = datetime.now(kst).replace(tzinfo=None)
         today1 = now.strftime('%m%d')
+        # No need to create a new instance of the button and view in the loop
 
     view.clear_items()
     await message.edit(view=view)
