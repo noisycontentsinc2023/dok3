@@ -777,10 +777,13 @@ async def update_embed_sul(ctx, date, msg):
             break
         
 @bot.command(name='슬독생인증')
-async def sul_Authentication(ctx, date):
-    
+async def sul_Authentication(ctx, date=None):
+    if not date:
+        await ctx.send("날짜를 입력해주세요! 예) 0101")
+        return
+
     # Validate the input date
-    if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
+    if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
         return
     
