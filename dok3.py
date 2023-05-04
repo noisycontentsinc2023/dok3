@@ -682,7 +682,7 @@ class CustomSelect(discord.ui.Select):
             await interaction.response.send_message("현재까지의 슬독생 누적 인증 횟수를 조회하시려면 '!슬독생누적'을 입력해주세요! 예시)!슬독생누적", ephemeral=True)
             
 @bot.command(name="슬독생")
-async def dok_study(ctx):
+async def sul_study(ctx):
     await ctx.message.delete()  # 명령어 삭제
     
     embed = discord.Embed(title="슬독생 명령어 모음집", description=f"{ctx.author.mention} 원하시는 명령어를 아래에서 골라주세요")
@@ -710,47 +710,43 @@ async def dok_study(ctx):
 
 class AuthButton4(discord.ui.Button):
     def __init__(self, ctx, user, date):
-        super().__init__(style=discord.ButtonStyle.green, label="확인 ")
+        super().__init__(style=discord.ButtonStyle.green, label="확인")
         self.ctx = ctx
         self.user = user
         self.date = date
         self.stop_loop = False  # Add the stop_loop attribute
     
     async def callback(self, interaction: discord.Interaction):
-        user_roles = [str(role.id) for role in interaction.user.roles] # 아이디 값을 문자열로 변경
-        allowed_roles = ["1019165662364586034", "1003257850799341615"]
-        if interaction.user.id == self.ctx.author.id:
-            await interaction.response.send_message("본인의 학습인증은 직접 인증할 수 없습니다. 다른 분이 확인하실때까지 잠시만 기다려주세요!", ephemeral=True)
-            return
-        elif not set(allowed_roles).intersection(set(user_roles)):
-            await interaction.response.send_message("이 버튼을 클릭할 권한이 없습니다.", ephemeral=True)
-            return
+        
         sheet8, rows = await get_sheet8()
+        
+        if interaction.user == self.ctx.author:
+            return
         existing_users = await sheet8.col_values(1)
         if str(self.user) not in existing_users:
-            empty_row = len(existing_users) + 2
-            await sheet8.update_cell(empty_row, 1, str(self.user))  # A열에서 2행부터 입력
+            empty_row = len(existing_users) + 1
+            await sheet8.update_cell(empty_row, 1, str(self.user))
             existing_dates = await sheet8.row_values(1)
             if self.date not in existing_dates:
                 empty_col = len(existing_dates) + 1
                 await sheet8.update_cell(1, empty_col, self.date)
-                await sheet8.update_cell(empty_row, empty_col, "1")  # 날짜에 맞는 셀에 1 입력
+                await sheet8.update_cell(empty_row, empty_col, "1")
             else:
                 col = existing_dates.index(self.date) + 1
-                await sheet8.update_cell(empty_row, col, "1")  # 날짜에 맞는 셀에 1 입력
+                await sheet8.update_cell(empty_row, col, "1")
         else:
             index = existing_users.index(str(self.user)) + 1
             existing_dates = await sheet8.row_values(1)
             if self.date not in existing_dates:
                 empty_col = len(existing_dates) + 1
                 await sheet8.update_cell(1, empty_col, self.date)
-                await sheet8.update_cell(index, empty_col, "1")  # 날짜에 맞는 셀에 1 입력
+                await sheet8.update_cell(index, empty_col, "1")
             else:
                 col = existing_dates.index(self.date) + 1
-                await sheet8.update_cell(index, col, "1")  # 날짜에 맞는 셀에 1 입력
+                await sheet8.update_cell(index, col, "1")
         await interaction.message.edit(embed=discord.Embed(title="인증상황", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 {self.date} 슬독생을 인증했습니다👍"), view=None)
         self.stop_loop = True
-            
+
 class CancelButton4(discord.ui.Button):
     def __init__(self, ctx):
         super().__init__(style=discord.ButtonStyle.red, label="취소")
@@ -759,12 +755,11 @@ class CancelButton4(discord.ui.Button):
     
     async def callback(self, interaction: discord.Interaction):
         if interaction.author.id != self.ctx.author.id:
-            # Interaction was not initiated by the same user who invoked the command
-            await interaction.response.send_message("You cannot use this button.", ephemeral=True)
-            return
+            await interaction.message.delete()
+            self.stop_loop = True
 
-async def update_embed_sul(ctx, user, date):
-    button = AuthButton4(ctx, user, date) # Move button creation outside of the loop
+async def update_embed_sul(ctx, date, msg):
+    button = AuthButton4(ctx, ctx.author, date) # Move button creation outside of the loop
     cancel = CancelButton4(ctx)  # Create a CancelButton instance
     while True:
         try:
@@ -775,15 +770,16 @@ async def update_embed_sul(ctx, user, date):
             view.add_item(button)
             view.add_item(cancel)  # Add the CancelButton to the view
 
-            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date}인증 요청입니다")
-            await message.edit(embed=embed, view=view)  # Use the `message` variable instead of `msg`
+            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date}생슬독생 인증입니다")
+            await msg.edit(embed=embed, view=view)
             await asyncio.sleep(60)
         except discord.errors.NotFound:
             break
         
 @bot.command(name='슬독생인증')
-async def sul_auth(ctx, date):
+async def sul_Authentication(ctx, date):
     
+    # Validate the input date
     if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
         return
@@ -797,17 +793,22 @@ async def sul_auth(ctx, date):
             date_index = existing_dates.index(date) + 1
             cell_value = await sheet8.cell(user_index, date_index)
             if cell_value.value == "1":
-                await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
+                await ctx.send(embed=discord.Embed(title="인증현황", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
                 return
 
-    await update_embed_sul(ctx, user, date)
-   
+    embed = discord.Embed(title="인증상태", description=f"{ctx.author.mention}님의 {date} 일취월장 인증 요청입니다")
+    view = discord.ui.View()
+    button = AuthButton4(ctx, ctx.author, date)
+    view.add_item(button)
+    view.add_item(CancelButton(ctx)) # Add the CancelButton to the view
+    msg = await ctx.send(embed=embed, view=view)
     
-def get_week_range(): 
-    today = date.today() # 오늘 날짜 
-    monday = today - timedelta(days=today.weekday()) #현재 날짜에서 오늘만큼의 요일을 빼서 월요일 날짜 획득
-    sunday = monday + timedelta(days=6)
-    return monday, sunday
+    asyncio.create_task(update_embed_(ctx, date, msg))
+
+    def check(interaction: discord.Interaction):
+        return interaction.message.id == msg.id and interaction.data.get("component_type") == discord.ComponentType.button.value
+
+    await bot.wait_for("interaction", check=check)
 
     
 @bot.command(name='슬독생누적')
