@@ -352,10 +352,15 @@ class CancelButton(discord.ui.Button):
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
         
-@bot.command(name='')
+@bot.command(name='인증')
 async def authentication(ctx, date):
     
-    if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date ):
+    if not date:
+        await ctx.send("날짜를 입력해주세요! 예) 0101")
+        return
+
+    # Validate the input date
+    if not re.match(r'^(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$', date):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
         return
     
@@ -393,7 +398,7 @@ def get_week_range():
     return monday, sunday
 
     
-@bot.command(name='')
+@bot.command(name='누적')
 async def accumulated_auth(ctx):
     sheet5, rows = await get_sheet5()
     existing_users = await sheet5.col_values(1)
@@ -416,9 +421,9 @@ async def accumulated_auth(ctx):
     overall_ranking = await sheet5.cell(user_index, 2) # Read the value of column B
     overall_ranking_value = int(overall_ranking.value)
     
-    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 5회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
+    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 이번 주({monday.strftime('%m%d')}~{sunday.strftime('%m%d')}) 누적 인증은 {total}회 입니다.\n한 주에 6회 이상 인증하면 랭커로 등록됩니다!\n랭커 누적 횟수는 {overall_ranking_value}회 입니다.")
 
-    if overall_ranking_value >= 1 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
+    if overall_ranking_value >= 1 and not discord.utils.get(ctx.author.roles, id=1103561648767258655):
         role = ctx.guild.get_role(1040094410488172574)
         await ctx.author.add_roles(role)
         embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
