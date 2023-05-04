@@ -350,24 +350,6 @@ class CancelButton(discord.ui.Button):
             # Interaction was not initiated by the same user who invoked the command
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
-
-async def update_embed(ctx, date, msg):
-    button = AuthButton(ctx, ctx.author, date) # Move button creation outside of the loop
-    cancel = CancelButton(ctx)  # Create a CancelButton instance
-    while True:
-        try:
-            if button.stop_loop or cancel.stop_loop: # Check if any button's stop_loop is True before updating the message
-                break
-
-            view = discord.ui.View(timeout=None)
-            view.add_item(button)
-            view.add_item(cancel)  # Add the CancelButton to the view
-
-            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date} 1일1독 인증 요청입니다")
-            await msg.edit(embed=embed, view=view)
-            await asyncio.sleep(60)
-        except discord.errors.NotFound:
-            break
         
 @bot.command(name='')
 async def authentication(ctx, date):
@@ -524,32 +506,27 @@ today1 = now.strftime('%m%d')
 @bot.command(name='북클럽인증')
 async def book_club_auth(ctx):
     required_role = "1097785865566175272" 
-    if not is_allowed_channel(ctx.channel.id):
-        await ctx.send("해당 명령어는 북클럽 채널에서만 사용할 수 있어요")
-        return
-    if not any(role.id == int(required_role) for role in ctx.author.roles):
-        embed = discord.Embed(title='Error', description='북클럽 멤버만 인증할 수 있어요')
-        await ctx.send(embed=embed)
-        return
-
-    sheet7, rows = await get_sheet7()
+    sheet7, rows = await get_sheet7()  # get_sheet3 호출 결과값 받기
     username = str(ctx.message.author)
-    
-    now = datetime.now(kst).replace(tzinfo=None)
+
+    now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
     today1 = now.strftime('%m%d')
 
     user_row = None
-    for row_num, row in enumerate(await sheet7.get_all_values(), start=1):
+    for row in await sheet7.get_all_values():
         if username in row:
             user_row = row
             break
+
     if user_row is None:
-        await sheet7.update_cell(row_num + 1, 1, username)
+        embed = discord.Embed(title='오류', description='2023 북클럽에 등록된 멤버가 아닙니다')
+        await ctx.send(embed=embed)
+        return
 
     user_cell = await find_user(username, sheet7)
 
     if user_cell is None:
-        embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
+        embed = discord.Embed(title='오류', description='2023 북클럽에 등록된 멤버가 아닙니다')
         await ctx.send(embed=embed)
         return
 
@@ -560,23 +537,23 @@ async def book_club_auth(ctx):
             break
 
     if today1_col is None:
-        embed = discord.Embed(title='Error', description='북클럽 기간이 아닙니다')
+        embed = discord.Embed(title='Error', description='2023 북클럽 기간이 아닙니다')
         await ctx.send(embed=embed)
         return
 
     if (await sheet7.cell(user_cell.row, today1_col)).value == '1':
-        embed = discord.Embed(title='Error', description='오늘 이미 인증을 하셨습니다')
+        embed = discord.Embed(title='오류', description='이미 오늘의 미션 인증을 하셨습니다')
         await ctx.send(embed=embed)
         return
       
     # create and send the message with the button
-    embed = discord.Embed(title="북클럽 인증", description=f'{ctx.author.mention}님의 북클럽 학습을 인증해주세요')
-    button = AuthButton3(ctx, username, today1, sheet7)
+    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 북클럽 학습인증을 해주세요')
+    button = AuthButton2(ctx, username, today1, sheet7)
     view = discord.ui.View()
     view.add_item(button)
-    await update_embed_auth1(ctx, username, today1, sheet7)
+    await update_embed_book_auth(ctx, username, today1, sheet7)
         
-class AuthButton3(discord.ui.Button):
+class AuthButton2(discord.ui.Button):
     def __init__(self, ctx, username, today1, sheet7):
         super().__init__(style=discord.ButtonStyle.green, label="학습인증")
         self.ctx = ctx
@@ -587,22 +564,24 @@ class AuthButton3(discord.ui.Button):
         self.today1 = today1  # 인스턴스 변수로 today1 저장
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user.id == self.ctx.author.id:
-            await interaction.response.send_message("본인의 학습인증은 직접 인증할 수 없습니다. 다른 분이 확인하실때까지 잠시만 기다려주세요!", ephemeral=True)
+        if interaction.user == self.ctx.author:
+            # If the user is the button creator, send an error message
+            embed = discord.Embed(title='Error', description='자신이 생성한 버튼은 사용할 수 없습니다 :(')
+            await interaction.response.edit_message(embed=embed, view=None)
             return
+
         try:
-            user_cell = await find_user(self.username, self.sheet7)
+            user_cell = await find_user(self.username, self.sheet3)
             if user_cell is None:
-                embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
+                embed = discord.Embed(title='오류', description='2023 북클럽에 등록된 멤버가 아닙니다')
                 await interaction.response.edit_message(embed=embed, view=None)
                 return
             user_row = user_cell.row
         except gspread.exceptions.CellNotFound:
-            embed = discord.Embed(title='Error', description='북클럽 멤버가 아닙니다')
+            embed = discord.Embed(title='오류', description='2023 북클럽에 등록된 멤버가 아닙니다')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
-        # Authenticate the user in the spreadsheet
         now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
         self.today = now.strftime('%m%d')
 
@@ -617,12 +596,12 @@ class AuthButton3(discord.ui.Button):
         self.view.clear_items()
 
         # Send a success message
-        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 북클럽 학습인증을 했습니다👍"), view=None)
+        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 학습인증을 인증했습니다👍"), view=None)
         self.stop_loop = True
-        
-async def update_embed_auth1(ctx, username, today1, sheet7):
-    embed = discord.Embed(title="학습인증", description=f'{ctx.author.mention}님의 북클럽 학습인증을 인증해주세요')
-    button = AuthButton3(ctx, username, today1, sheet7)  # Add the missing today1 argument
+
+async def update_embed_book_auth(ctx, username, today1, sheet7):
+    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 학습을 인증해주세요')
+    button = AuthButton2(ctx, username, today1, sheet7)
     view = discord.ui.View(timeout=None)
     view.add_item(button)
     message = await ctx.send(embed=embed, view=view)
@@ -633,7 +612,7 @@ async def update_embed_auth1(ctx, username, today1, sheet7):
         today1 = now.strftime('%m%d')
         if not button.stop_loop:
             view = discord.ui.View(timeout=None)
-            button = AuthButton3(ctx, username, sheet3)
+            button = AuthButton2(ctx, username, sheet7)
             view.add_item(button)
             await message.edit(embed=embed, view=view)
 
