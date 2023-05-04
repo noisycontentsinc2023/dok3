@@ -679,7 +679,7 @@ class CustomSelect(discord.ui.Select):
         if self.values[0] == "슬독생학습인증":
             await interaction.response.send_message("슬독생 '!슬독생인증 인증하려는 날짜'를 입력해주세요! 예시)!슬독생인증 0425", ephemeral=True)
         elif self.values[0] == "슬독생누적현황":
-            await interaction.response.send_message("현재까지의 슬독생 누적 인증 횟수를 조회하시려면 '!슬독생누적'을 입력해주세요! 예시)생슬독생누적", ephemeral=True)
+            await interaction.response.send_message("현재까지의 슬독생 누적 인증 횟수를 조회하시려면 '!슬독생누적'을 입력해주세요! 예시)!슬독생누적", ephemeral=True)
             
 @bot.command(name="슬독생")
 async def dok_study(ctx):
