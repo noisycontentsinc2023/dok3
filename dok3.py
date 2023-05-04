@@ -977,7 +977,7 @@ async def gra_Authentication(ctx, date=None):
         await ctx.send("정확한 네자리 숫자를 입력해주세요! 1월1일 인증을 하시려면 0101을 입력하시면 됩니다 :)")
         return
     
-    sheet8, rows = await get_sheet9()
+    sheet9, rows = await get_sheet9()
     existing_users = await sheet9.col_values(1)
     if str(ctx.author) in existing_users:
         user_index = existing_users.index(str(ctx.author)) + 1
