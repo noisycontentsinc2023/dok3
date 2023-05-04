@@ -960,7 +960,7 @@ async def update_embed_gra(ctx, date, msg):
             view.add_item(button)
             view.add_item(cancel)  # Add the CancelButton to the view
 
-            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date}디문법스터디 인증입니다")
+            embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date} 문법스터디 인증 요청입니다")
             await msg.edit(embed=embed, view=view)
             await asyncio.sleep(60)
         except discord.errors.NotFound:
