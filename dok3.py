@@ -763,7 +763,7 @@ class CancelButton4(discord.ui.Button):
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
 
-async def update_embed_sul(ctx, date, msg):
+async def update_embed_sul(ctx, date, message):
     button = AuthButton4(ctx, ctx.author, date) # Move button creation outside of the loop
     cancel = CancelButton4(ctx)  # Create a CancelButton instance
     while True:
@@ -776,7 +776,7 @@ async def update_embed_sul(ctx, date, msg):
             view.add_item(cancel)  # Add the CancelButton to the view
 
             embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date}인증 요청입니다")
-            await msg.edit(embed=embed, view=view)
+            await message.edit(embed=embed, view=view)  # Use the `message` variable instead of `msg`
             await asyncio.sleep(60)
         except discord.errors.NotFound:
             break
@@ -950,8 +950,8 @@ class CancelButton5(discord.ui.Button):
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
 
-async def update_embed_gra(ctx, date, msg):
-    button = AuthButton4(ctx, ctx.author, date) # Move button creation outside of the loop
+async def update_embed_(ctx, date, message):
+    button = AuthButton5(ctx, ctx.author, date) # Move button creation outside of the loop
     cancel = CancelButton5(ctx)  # Create a CancelButton instance
     while True:
         try:
@@ -963,7 +963,7 @@ async def update_embed_gra(ctx, date, msg):
             view.add_item(cancel)  # Add the CancelButton to the view
 
             embed = discord.Embed(title="인증요청", description=f"{ctx.author.mention}님의 {date}인증 요청입니다")
-            await msg.edit(embed=embed, view=view)
+            await message.edit(embed=embed, view=view)  # Use the `message` variable instead of `msg`
             await asyncio.sleep(60)
         except discord.errors.NotFound:
             break
