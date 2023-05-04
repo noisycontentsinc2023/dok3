@@ -800,7 +800,7 @@ async def sul_auth(ctx, date):
                 await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
                 return
 
-    await update_embed_sul(ctx, date, msg):
+    await update_embed_sul(ctx, date, msg)
    
     
 def get_week_range(): 
@@ -987,7 +987,7 @@ async def gra_auth(ctx, date):
                 await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
                 return
 
-    await update_embed_gra(ctx, date, msg):
+    await update_embed_gra(ctx, date, msg)
     
 def get_week_range(): 
     today = date.today() # 오늘 날짜 
