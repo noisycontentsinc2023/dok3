@@ -861,7 +861,7 @@ async def sul_count(ctx):
     
     overall_sul = await sheet8.cell(user_index, 2) # Read the value of column B
     
-    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 누적 인증 횟수는 {overall_sul}회 입니다.")
+    embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 누적 인증 횟수는 {overall_sul.value}회 입니다.")
 
     await ctx.send(embed=embed)
     
