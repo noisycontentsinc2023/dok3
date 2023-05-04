@@ -763,8 +763,8 @@ class CancelButton4(discord.ui.Button):
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
 
-async def update_embed_sul(ctx, date, message):
-    button = AuthButton4(ctx, ctx.author, date) # Move button creation outside of the loop
+async def update_embed_sul(ctx, user, date):
+    button = AuthButton4(ctx, user, date) # Move button creation outside of the loop
     cancel = CancelButton4(ctx)  # Create a CancelButton instance
     while True:
         try:
@@ -800,7 +800,7 @@ async def sul_auth(ctx, date):
                 await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
                 return
 
-    await update_embed_sul(ctx, date, message)
+    await update_embed_sul(ctx, user, date)
    
     
 def get_week_range(): 
@@ -950,8 +950,8 @@ class CancelButton5(discord.ui.Button):
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
 
-async def update_embed_(ctx, date, message):
-    button = AuthButton5(ctx, ctx.author, date) # Move button creation outside of the loop
+async def update_embed_(ctx, user, date):
+    button = AuthButton5(ctx, user, date) # Move button creation outside of the loop
     cancel = CancelButton5(ctx)  # Create a CancelButton instance
     while True:
         try:
@@ -987,7 +987,7 @@ async def gra_auth(ctx, date):
                 await ctx.send(embed=discord.Embed(title="Authorization Status", description=f"{ctx.author.mention}님, 해당 날짜는 이미 인증되었습니다!"))
                 return
 
-    await update_embed_gra(ctx, date, message)
+    await update_embed_gra(ctx, user, date)
     
 def get_week_range(): 
     today = date.today() # 오늘 날짜 
