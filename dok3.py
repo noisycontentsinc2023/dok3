@@ -629,9 +629,13 @@ async def update_embed_auth(ctx, username, today1, sheet7):
 
     while not button.stop_loop:
         await asyncio.sleep(60)
-        now = datetime.now(kst).replace(tzinfo=None)
+        now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
         today1 = now.strftime('%m%d')
-        # No need to create a new instance of the button and view in the loop
+        if not button.stop_loop:
+            view = discord.ui.View(timeout=None)
+            button = AuthButton3(ctx, username, sheet3)
+            view.add_item(button)
+            await message.edit(embed=embed, view=view)
 
     view.clear_items()
     await message.edit(view=view)
