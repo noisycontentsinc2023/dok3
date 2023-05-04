@@ -803,7 +803,7 @@ async def sul_Authentication(ctx, date):
     view.add_item(CancelButton(ctx)) # Add the CancelButton to the view
     msg = await ctx.send(embed=embed, view=view)
     
-    asyncio.create_task(update_embed_(ctx, date, msg))
+    asyncio.create_task(update_embed_sul(ctx, date, msg))
 
     def check(interaction: discord.Interaction):
         return interaction.message.id == msg.id and interaction.data.get("component_type") == discord.ComponentType.button.value
