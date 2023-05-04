@@ -574,7 +574,7 @@ async def book_club_auth(ctx):
     button = AuthButton3(ctx, username, today1, sheet7)
     view = discord.ui.View()
     view.add_item(button)
-    await ctx.send(embed=embed, view=view)
+    await update_embed_auth1(ctx, username, today1, sheet7)
         
 class AuthButton3(discord.ui.Button):
     def __init__(self, ctx, username, today1, sheet7):
@@ -620,8 +620,8 @@ class AuthButton3(discord.ui.Button):
         await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 북클럽 학습인증을 했습니다👍"), view=None)
         self.stop_loop = True
         
-async def update_embed_auth(ctx, username, today1, sheet7):
-    embed = discord.Embed(title="", description=f'{ctx.author.mention}님의 북클럽 학습인증을 인증해주세요')
+async def update_embed_auth1(ctx, username, today1, sheet7):
+    embed = discord.Embed(title="학습인증", description=f'{ctx.author.mention}님의 북클럽 학습인증을 인증해주세요')
     button = AuthButton3(ctx, username, today1, sheet7)  # Add the missing today1 argument
     view = discord.ui.View(timeout=None)
     view.add_item(button)
