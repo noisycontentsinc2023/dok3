@@ -427,16 +427,6 @@ async def accumulated_auth(ctx):
         role = ctx.guild.get_role(1040094410488172574)
         await ctx.author.add_roles(role)
         embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
-        
-    if overall_ranking_value >= 10 and not discord.utils.get(ctx.author.roles, id=1040094410488172574):
-        role = ctx.guild.get_role(1040094410488172574)
-        await ctx.author.add_roles(role)
-        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
-
-    if overall_ranking_value >= 30 and not discord.utils.get(ctx.author.roles, id=1040094943722606602):
-        role = ctx.guild.get_role(1040094943722606602)
-        await ctx.author.add_roles(role)
-        embed.add_field(name="축하합니다!", value=f"{role.mention} 롤을 획득하셨습니다!")
 
     await ctx.send(embed=embed)
 
