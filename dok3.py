@@ -300,7 +300,7 @@ class AuthButton(discord.ui.Button):
             return
         existing_users = await sheet5.col_values(1)
         if str(self.user) not in existing_users:
-            empty_row = len(existing_users) + 2
+            empty_row = len(existing_users) + 1
             await sheet5.insert_row([str(self.user)], empty_row)  # A열에서 2행부터 입력
             existing_dates = await sheet5.row_values(1)
             if self.date not in existing_dates:
