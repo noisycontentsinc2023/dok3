@@ -1036,6 +1036,20 @@ async def gra_count(ctx):
     embed = discord.Embed(title="누적 인증 현황", description=f"{ctx.author.mention}님, 누적 인증 횟수는 {overall_gra.value}회 입니다.")
 
     await ctx.send(embed=embed)
+
+#------------------------------------------------#
+@bot.command(name="역할")
+async def show_roles(ctx):
+    roles = ctx.author.roles[1:]  # Exclude the everyone role
+    embed = discord.Embed(title=f"{ctx.author.name}님의 역할입니다", color=0x00ff00)
+    
+    # Add each role and its icon to the embed's description
+    for role in roles:
+        embed.description = f"{embed.description}\n{role.name}"
+        if role.icon:
+            embed.set_thumbnail(url=role.icon.url)
+            
+    await ctx.send(embed=embed)
     
 #봇 실행
 bot.run(TOKEN)
