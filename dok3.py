@@ -720,6 +720,11 @@ class AuthButton4(discord.ui.Button):
         
         sheet8, rows = await get_sheet8()
         
+        allowed_roles = [1019165662364586034, 1003257850799341615]
+        if not any(role.id in allowed_roles for role in interaction.user.roles):
+            await interaction.response.send_message("죄송합니다, 이 버튼은 권한이 없는 사용자가 클릭할 수 없습니다.", ephemeral=True)
+            return
+          
         if interaction.user == self.ctx.author:
             return
         existing_users = await sheet8.col_values(1)
@@ -908,6 +913,11 @@ class AuthButton5(discord.ui.Button):
     
     async def callback(self, interaction: discord.Interaction):
         
+        allowed_roles = [1019165662364586034, 1003257850799341615]
+        if not any(role.id in allowed_roles for role in interaction.user.roles):
+            await interaction.response.send_message("죄송합니다, 이 버튼은 권한이 없는 사용자가 클릭할 수 없습니다.", ephemeral=True)
+            return
+      
         sheet9, rows = await get_sheet9()
         
         if interaction.user == self.ctx.author:
