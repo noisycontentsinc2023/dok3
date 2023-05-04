@@ -351,6 +351,7 @@ class CancelButton(discord.ui.Button):
             # Interaction was not initiated by the same user who invoked the command
             await interaction.response.send_message("You cannot use this button.", ephemeral=True)
             return
+        await interaction.message.delete()
         
 @bot.command(name='인증')
 async def authentication(ctx, date):
