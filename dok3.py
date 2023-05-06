@@ -540,7 +540,7 @@ async def book_club_auth(ctx):
         return
 
     if (await sheet7.cell(user_cell.row, today1_col)).value == '1':
-        embed = discord.Embed(title='오류', description='이미 오늘의 미션 인증을 하셨습니다')
+        embed = discord.Embed(title='오류', description='이미 오늘의 인증을 하셨습니다')
         await ctx.send(embed=embed)
         return
       
