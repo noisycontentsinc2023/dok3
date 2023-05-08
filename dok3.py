@@ -113,6 +113,71 @@ async def vote(ctx, *, args):
             poll_info = {'title': title, 'options': unicode_options, 'votes': {}, 'closed': False, 'message_id': poll_message.id} # Use unicode_options instead of options
             polls[poll_message.id] = poll_info
             
+@bot.event
+async def on_reaction_add(reaction, user):
+    # Check if the reaction is for a poll message
+    message_id = reaction.message.id
+    poll_id = None
+    for pid, poll in polls.items():
+        if 'message_id' in poll and poll['message_id'] == message_id:
+            poll_id = pid
+            break
+
+    if not poll_id:
+        print(f"Reaction received for non-poll message with message ID {message_id}")
+        return
+
+    # Check if the reaction was added to a message sent by the bot
+    if user == bot.user:
+        return
+
+    # Check if the reaction is for a valid option
+    emoji = get_emoji(reaction.emoji)
+    poll_data = polls[poll_id]
+    option_index = -1
+    for i, option in enumerate(poll_data['options']):
+        if emoji == option:
+            option_index = i
+            break
+    if option_index == -1:
+        print(f"User {user.name} reacted with invalid emoji {emoji} for poll {poll_data['title']} ({poll_id})")
+        return
+
+    # Add or update user vote
+    user_id = str(user.id)
+    if user_id not in poll_data['votes']:
+        poll_data['votes'][user_id] = emoji
+    else:
+        poll_data['votes'][user_id] = emoji
+
+    print(f"User {user.name} voted for option {emoji} in poll {poll_data['title']} ({poll_id})")
+
+    # Update poll embed with current vote count
+    poll_message_id = poll_data['message_id']
+    poll_message = await reaction.message.channel.fetch_message(poll_message_id)
+
+    poll_results = {}
+    for option in poll_data['options']:
+        poll_results[option] = 0
+    for reaction in poll_message.reactions:
+        emoji = get_emoji(reaction.emoji)
+        if emoji in poll_data['options']:
+            async for user in reaction.users():
+                if user != bot.user:
+                    poll_results[emoji] += 1
+
+    result_message = ''
+    for option in poll_data['options']:
+        count = poll_results[option]
+        result_message += f'{option}: {count} vote(s)\n'
+
+    poll_embed = poll_message.embeds[0]
+    poll_embed.set_field_at(1, name='현재 투표 현황', value=result_message)
+
+    await poll_message.edit(embed=poll_embed)
+
+    print(f"Poll {poll_data['title']} ({poll_id}) updated with current vote count")
+    
 #------------------------------------------------고정------------------------------------------------------# 
 
 # Set up Google Sheets worksheet
