@@ -907,6 +907,42 @@ async def sul_count(ctx):
 
     await ctx.send(embed=embed)
 
+@bot.command(name='슬독생출석')
+async def sul_attendance(ctx):
+    sheet8, rows = await get_sheet8()
+    existing_users = await sheet8.col_values(1)
+
+    if str(ctx.author) not in existing_users:
+        await ctx.send(f"{ctx.author.mention}님,기록이 없습니다")
+        return
+
+    user_index = existing_users.index(str(ctx.author)) + 1
+    existing_dates = await sheet8.row_values(1)
+
+    today = datetime.datetime.today()
+    start_date = datetime.datetime(year=today.year, month=5, day=8)
+    missing_dates = []
+    for i in range((today - start_date).days + 1):
+        date = (start_date + datetime.timedelta(days=i)).strftime('%m%d')
+        if date not in existing_dates:
+            missing_dates.append(date)
+        else:
+            date_index = existing_dates.index(date) + 1
+            cell_value = await sheet8.cell(user_index, date_index)
+            if not cell_value.value:
+                missing_dates.append(date)
+
+    total_days = len(missing_dates) + len(existing_dates) - 1  # Subtract one for the header row
+    attended_days = total_days - len(missing_dates)
+
+    overall_sul = await sheet8.cell(user_index, 2)  # Read the value of column B
+    attendance_rate = attended_days / total_days * 100 if total_days > 0 else 0
+
+    missing_dates_str = ', '.join(missing_dates)
+    message = f"{ctx.author.mention}님, {missing_dates_str} 에 출석하지 않으셨습니다. " \
+              f"현재까지의 누적 출석률은 {attendance_rate:.2f}% 입니다."
+    await ctx.send(message)
+    
 #------------------------------------------------문법------------------------------------------------------# 
 
 # Set up Google Sheets worksheet
