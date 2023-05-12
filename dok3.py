@@ -935,7 +935,7 @@ async def sul_attendance(ctx):
         message = f"{ctx.author.mention}님, {missing_dates_str} 에 출석하지 않으셨습니다. " \
                   f"현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
     else:
-        message = f"{ctx.author.mention}, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
+        message = f"{ctx.author.mention}님, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
 
     await ctx.send(message)
     
@@ -1171,7 +1171,7 @@ async def gra_attendance(ctx):
         message = f"{ctx.author.mention}님, {missing_dates_str} 에 출석하지 않으셨습니다. " \
                   f"현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
     else:
-        message = f"{ctx.author.mention}, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
+        message = f"{ctx.author.mention}님, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
 
     await ctx.send(message)
     
