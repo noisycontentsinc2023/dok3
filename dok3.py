@@ -705,13 +705,6 @@ async def mission_count(ctx):
     embed = discord.Embed(description=f"{ctx.author.mention}님은 현재까지 {count} 회 인증하셨어요!", color=0x00FF00)
     await ctx.send(embed=embed)
 
-    # Check if the user's count is 6 or 7 and grant the Finisher role
-    if count in [30]:
-        role = discord.utils.get(ctx.guild.roles, id=1093831438475989033)
-        await ctx.author.add_roles(role)
-        embed = discord.Embed(description="완주를 축하드립니다! 완주자 롤을 받으셨어요!", color=0x00FF00)
-        await ctx.send(embed=embed)
-
 #------------------------------------------------슬독------------------------------------------------------# 
 
 # Set up Google Sheets worksheet
@@ -929,26 +922,20 @@ async def sul_attendance(ctx):
         date = (start_date + timedelta(days=i)).strftime('%m%d')
         if date not in existing_dates:
             missing_dates.append(date)
-        else:
+        elif date <= today1:  # Only consider dates up to today
             date_index = existing_dates.index(date) + 1
             cell_value = await sheet8.cell(user_index, date_index)
             if not cell_value.value:
                 missing_dates.append(date)
 
-    total_days = len(missing_dates) + len(existing_dates) - 1  # Subtract one for the header row
-    attended_days = total_days - len(missing_dates)
+    attendance_rate = await sheet8.cell(user_index, 3)  # Load the value from column C
 
-    overall_sul = await sheet8.cell(user_index, 2)  # Read the value of column B
-    attendance_rate = attended_days / total_days * 100 if total_days > 0 else 0
-
-    missing_dates_str = ', '.join(missing_dates)
-    
     if missing_dates:
         missing_dates_str = ', '.join(missing_dates)
         message = f"{ctx.author.mention}님, {missing_dates_str} 에 출석하지 않으셨습니다. " \
-                  f"현재까지의 누적 출석률은 {attendance_rate:.2f}% 입니다."
+                  f"현재까지의 누적 출석률은 {attendance_rate.value}% 입니다."
     else:
-        message = f"{ctx.author.mention}, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate:.2f}% 입니다."
+        message = f"{ctx.author.mention}, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
 
     await ctx.send(message)
     
@@ -1148,6 +1135,7 @@ async def gra_count(ctx):
     await ctx.send(embed=embed)
 
 
+
 @bot.command(name='문법출석')
 async def gra_attendance(ctx):
     kst = pytz.timezone('Asia/Seoul')
@@ -1170,26 +1158,20 @@ async def gra_attendance(ctx):
         date = (start_date + timedelta(days=i)).strftime('%m%d')
         if date not in existing_dates:
             missing_dates.append(date)
-        else:
+        elif date <= today1:  # Only consider dates up to today
             date_index = existing_dates.index(date) + 1
             cell_value = await sheet9.cell(user_index, date_index)
             if not cell_value.value:
                 missing_dates.append(date)
 
-    total_days = len(missing_dates) + len(existing_dates) - 1  # Subtract one for the header row
-    attended_days = total_days - len(missing_dates)
+    attendance_rate = await sheet9.cell(user_index, 3)  # Load the value from column C
 
-    overall_sul = await sheet9.cell(user_index, 2)  # Read the value of column B
-    attendance_rate = attended_days / total_days * 100 if total_days > 0 else 0
-
-    missing_dates_str = ', '.join(missing_dates)
-    
     if missing_dates:
         missing_dates_str = ', '.join(missing_dates)
         message = f"{ctx.author.mention}님, {missing_dates_str} 에 출석하지 않으셨습니다. " \
-                  f"현재까지의 누적 출석률은 {attendance_rate:.2f}% 입니다."
+                  f"현재까지의 누적 출석률은 {attendance_rate.value}% 입니다."
     else:
-        message = f"{ctx.author.mention}, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate:.2f}% 입니다."
+        message = f"{ctx.author.mention}, 오늘 날짜기준으로 전체 출석하셨습니다. 현재까지의 누적 출석률은 {attendance_rate.value} 입니다."
 
     await ctx.send(message)
     
