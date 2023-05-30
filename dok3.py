@@ -180,7 +180,7 @@ async def on_reaction_add(reaction, user):
     
 #------------------------------------------------고정------------------------------------------------------# 
 
-# Set up Google Sheets worksheet
+# 각각의 시트 이름은 달라야 하며 서버기록 내 시트이름으로 변경하면 됩니다. 전체 코드에서 시트이름이 중복되면 
 async def get_sheet4():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
@@ -293,7 +293,7 @@ async def on_message(message):
 
 #------------------------------------------------1일1독------------------------------------------------------# 
 
-# Set up Google Sheets worksheet
+# 1일 1독
 async def get_sheet5():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
@@ -321,7 +321,8 @@ class CustomSelect(discord.ui.Select):
             await interaction.response.send_message("1일1독을 인증하시려면 '!인증 인증하려는 날짜를 입력해주세요!' 예시)!인증 0425", ephemeral=True)
         elif self.values[0] == "누적현황":
             await interaction.response.send_message("현재까지의 1일1독 누적 횟수를 조회하시려면 '!누적'을 입력해주세요! 예시)!누적", ephemeral=True)
-            
+
+#------------------------------------------------!1일1독을 입력하였을 때 뜨는 명령어 모음입니다------------------------------------------------------#             
 @bot.command(name="1일1독")
 async def one_per_day(ctx):
     await ctx.message.delete()  # 명령어 삭제
@@ -389,10 +390,10 @@ class AuthButton(discord.ui.Button):
         self.stop_loop = True
 
 async def update_embed(ctx, date, msg):
-    button = AuthButton(ctx, ctx.author, date) # Move button creation outside of the loop
+    button = AuthButton(ctx, ctx.author, date) 
     while True:
         try:
-            if button.stop_loop: # Check if stop_loop is True before updating the message
+            if button.stop_loop: 
                 break
 
             view = discord.ui.View(timeout=None)
@@ -498,8 +499,8 @@ async def accumulated_auth(ctx):
     await ctx.send(embed=embed)
 
 #-----------북클럽------------#
-# Set up Google Sheets worksheet
-async def get_sheet7():  # 수정
+# 북클럽으로 시트 지정 
+async def get_sheet7():  
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
     spreadsheet = await client.open('서버기록')
@@ -562,7 +563,7 @@ async def one_per_day(ctx):
     await asyncio.sleep(60)  # 1분 대기
     await message.delete()  # 임베드 메시지와 셀렉트 메뉴 삭제
 
-kst = pytz.timezone('Asia/Seoul')
+kst = pytz.timezone('Asia/Seoul') # 한국 시간대로 설정 
 now = datetime.now(kst).replace(tzinfo=None)
 today1 = now.strftime('%m%d') 
 
@@ -609,7 +610,6 @@ async def book_club_auth(ctx):
         await ctx.send(embed=embed)
         return
       
-    # create and send the message with the button
     await update_embed_book_auth(ctx, username, today1, sheet7)
         
 class AuthButton3(discord.ui.Button):
@@ -707,7 +707,7 @@ async def mission_count(ctx):
 
 #------------------------------------------------슬독------------------------------------------------------# 
 
-# Set up Google Sheets worksheet
+# 슬독생 서버 시트 설정
 async def get_sheet8():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
