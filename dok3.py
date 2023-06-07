@@ -498,7 +498,7 @@ async def accumulated_auth(ctx):
 
     await ctx.send(embed=embed)
 
-#-----------북클럽------------#
+#-----------북클럽 종료 후 채널만 ------------#
 # 북클럽으로 시트 지정 
 async def get_sheet7():  
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
@@ -736,7 +736,7 @@ class CustomSelect(discord.ui.Select):
         elif self.values[0] == "슬독생누적현황":
             await interaction.response.send_message("현재까지의 슬독생 누적 인증 횟수를 조회하시려면 '!슬독생누적'을 입력해주세요! 예시)!슬독생누적", ephemeral=True)
             
-@bot.command(name="슬독생")
+@bot.command(name="")
 async def sul_study(ctx):
     await ctx.message.delete()  # 명령어 삭제
     
@@ -836,7 +836,7 @@ async def update_embed_sul(ctx, date, msg):
         except discord.errors.NotFound:
             break
         
-@bot.command(name='슬독생인증')
+@bot.command(name='')
 async def sul_Authentication(ctx, date=None):
     if not date:
         await ctx.send("날짜를 입력해주세요! 예) 0101")
@@ -874,7 +874,7 @@ async def sul_Authentication(ctx, date=None):
     await bot.wait_for("interaction", check=check)
 
     
-@bot.command(name='슬독생누적')
+@bot.command(name='')
 async def sul_count(ctx):
     sheet8, rows = await get_sheet8()
     existing_users = await sheet8.col_values(1)
@@ -900,7 +900,7 @@ async def sul_count(ctx):
 
     await ctx.send(embed=embed)
 
-@bot.command(name='슬독생출석')
+@bot.command(name='')
 async def sul_attendance(ctx):
     kst = pytz.timezone('Asia/Seoul')
     now = datetime.now(kst).replace(tzinfo=None)
@@ -939,7 +939,7 @@ async def sul_attendance(ctx):
 
     await ctx.send(message)
     
-#------------------------------------------------문법------------------------------------------------------# 
+#------------------------------------------------문법사용안함------------------------------------------------------# 
 
 # Set up Google Sheets worksheet
 async def get_sheet9():
@@ -970,7 +970,7 @@ class CustomSelect(discord.ui.Select):
         elif self.values[0] == "문법누적현황":
             await interaction.response.send_message("현재까지의 문법스터디 누적 인증 횟수를 조회하시려면 '!문법누적'을 입력해주세요! 예시)!문법누적", ephemeral=True)
             
-@bot.command(name="문법")
+@bot.command(name="")
 async def gra_study(ctx):
     await ctx.message.delete()  # 명령어 삭제
     
@@ -1070,7 +1070,7 @@ async def update_embed_gra(ctx, date, msg):
         except discord.errors.NotFound:
             break
         
-@bot.command(name='문법인증')
+@bot.command(name='')
 async def gra_Authentication(ctx, date=None):
     if not date:
         await ctx.send("날짜를 입력해주세요! 예) 0101")
@@ -1108,7 +1108,7 @@ async def gra_Authentication(ctx, date=None):
     await bot.wait_for("interaction", check=check)
 
     
-@bot.command(name='문법누적')
+@bot.command(name='')
 async def gra_count(ctx):
     sheet9, rows = await get_sheet9()
     existing_users = await sheet9.col_values(1)
@@ -1136,7 +1136,7 @@ async def gra_count(ctx):
 
 
 
-@bot.command(name='문법출석')
+@bot.command(name='')
 async def gra_attendance(ctx):
     kst = pytz.timezone('Asia/Seoul')
     now = datetime.now(kst).replace(tzinfo=None)
