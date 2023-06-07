@@ -28,6 +28,8 @@ intents.presences = False
 TOKEN = os.environ['TOKEN']
 PREFIX = os.environ['PREFIX']
 
+prefix = '!'
+
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
