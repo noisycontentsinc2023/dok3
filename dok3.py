@@ -534,7 +534,7 @@ def is_allowed_channel(channel_id):
     allowed_channels = ["1097731096206119033", "1057567679281647706", "929917732537909288"]
     return str(channel_id) in allowed_channels
   
-@bot.command(name="북클럽")
+@bot.command(name="")
 async def one_per_day(ctx):
     await ctx.message.delete()  # 명령어 삭제
     if not is_allowed_channel(ctx.channel.id):
@@ -568,7 +568,7 @@ kst = pytz.timezone('Asia/Seoul') # 한국 시간대로 설정
 now = datetime.now(kst).replace(tzinfo=None)
 today1 = now.strftime('%m%d') 
 
-@bot.command(name='북클럽인증')
+@bot.command(name='')
 async def book_club_auth(ctx):
     required_role = "1097785865566175272" 
     sheet7, rows = await get_sheet7()  # get_sheet3 호출 결과값 받기
@@ -1189,6 +1189,172 @@ async def show_roles(ctx):
             embed.set_thumbnail(url=role.icon.url)
             
     await ctx.send(embed=embed)
+  
+#-----------2023어린왕자 ------------#
+# 북클럽으로 시트 지정 
+async def get_sheet10():  
+    client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
+    client = await client_manager.authorize()
+    spreadsheet = await client.open('서버기록')
+    sheet10 = await spreadsheet.worksheet('2023어린왕자')
+    rows = await sheet10.get_all_values()
+    return sheet10, rows 
+
+async def find_user(username, sheet):
+    cell = None
+    try:
+        cells = await sheet.findall(username)
+        if cells:
+            cell = cells[0]
+    except gspread.exceptions.APIError as e:
+        print(f'find_user error: {e}')
+    return cell
+            
+def is_allowed_channel(channel_id):
+    allowed_channels = ["1057567679281647706", "1139039595615490059"]
+    return str(channel_id) in allowed_channels
+  
+kst = pytz.timezone('Asia/Seoul') # 한국 시간대로 설정 
+now = datetime.now(kst).replace(tzinfo=None)
+today3 = now.strftime('%m%d') 
+
+@bot.command(name='북클럽인증')
+async def book_club_auth(ctx):
+    required_role = "1139014883262877767" 
+    sheet10, rows = await get_sheet10()  # get_sheet10 호출 결과값 받기
+    username = str(ctx.message.author)
+
+    now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
+    today4 = now.strftime('%m%d')
+
+    user_row = None
+    for row in await sheet10.get_all_values():
+        if username in row:
+            user_row = row
+            break
+
+    if user_row is None:
+        embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+        await ctx.send(embed=embed)
+        return
+
+    user_cell = await find_user(username, sheet10)
+
+    if user_cell is None:
+        embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+        await ctx.send(embed=embed)
+        return
+
+    today3_col = None
+    for i, col in enumerate(await sheet10.row_values(1)):
+        if today3 in col:
+            today3_col = i + 1
+            break
+
+    if today3_col is None:
+        embed = discord.Embed(title='Error', description='2023 어린왕자-북클럽 기간이 아닙니다')
+        await ctx.send(embed=embed)
+        return
+
+    if (await sheet10.cell(user_cell.row, today3_col)).value == '1':
+        embed = discord.Embed(title='오류', description='이미 오늘의 인증을 하셨습니다')
+        await ctx.send(embed=embed)
+        return
+      
+    await update_embed_book_auth(ctx, username, today3, sheet10)
+        
+class AuthButton3(discord.ui.Button):
+    def __init__(self, ctx, username, today3, sheet10):
+        super().__init__(style=discord.ButtonStyle.green, label="북클럽 인증")
+        self.ctx = ctx
+        self.username = username
+        self.sheet10 = sheet10
+        self.auth_event = asyncio.Event()
+        self.stop_loop = False
+        self.today3 = today3  # 인스턴스 변수로 today3 저장
+
+    async def callback(self, interaction: discord.Interaction):
+        if interaction.user == self.ctx.author:
+            # If the user is the button creator, send an error message
+            embed = discord.Embed(title='Error', description='자신이 생성한 버튼은 사용할 수 없습니다 :(')
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
+
+        try:
+            user_cell = await find_user(self.username, self.sheet10)
+            if user_cell is None:
+                embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+                await interaction.response.edit_message(embed=embed, view=None)
+                return
+            user_row = user_cell.row
+        except gspread.exceptions.CellNotFound:
+            embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
+
+        now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
+        self.today = now.strftime('%m%d')
+
+        # Authenticate the user in the spreadsheet
+        today3_col = (await self.sheet10.find(self.today)).col
+        await self.sheet10.update_cell(user_row, today3_col, '1')
+
+        # Set the auth_event to stop the loop
+        self.auth_event.set()
+
+        # Remove the button from the view
+        self.view.clear_items()
+
+        # Send a success message
+        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 학습인증을 인증했습니다👍"), view=None)
+        self.stop_loop = True
+
+async def update_embed_book_auth(ctx, username, today3, sheet10):
+    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 학습을 인증해주세요')
+    button = AuthButton3(ctx, username, today3, sheet10)
+    view = discord.ui.View(timeout=None)
+    view.add_item(button)
+    message = await ctx.send(embed=embed, view=view)
+
+    while not button.stop_loop:
+        await asyncio.sleep(60)
+        now = datetime.now(kst).replace(tzinfo=None)
+        today3 = now.strftime('%m%d')
+        if not button.stop_loop:
+            view = discord.ui.View(timeout=None)
+            button = AuthButton3(ctx, username, today3, sheet10)
+            view.add_item(button)
+            await message.edit(embed=embed, view=view)
+
+    view.clear_items()
+    await message.edit(view=view)
+            
+@bot.command(name='북클럽누적')
+async def mission_count(ctx):
+    if not is_allowed_channel(ctx.channel.id):
+        await ctx.send("해당 명령어는 <#1139039595615490059>에서만 사용할 수 있어요")
+        return
+    username = str(ctx.message.author)
+    sheet10, rows = await get_sheet10()
     
+    # Find the user's row in the Google Sheet
+    user_row = None
+    for row in await sheet10.get_all_values():
+        if username in row:
+            user_row = row
+            break
+
+    if user_row is None:
+        embed = discord.Embed(title='Error', description='2023 어린왕자-북클럽 멤버가 아닙니다')
+        await ctx.send(embed=embed)
+        return
+
+    user_cell = await sheet10.find(username)
+    count = int((await sheet10.cell(user_cell.row, 2)).value)  # Column I is the 9th column
+
+    # Send the embed message with the user's authentication count
+    embed = discord.Embed(description=f"{ctx.author.mention}님은 현재까지 {count} 회 인증하셨어요!", color=0x00FF00)
+    await ctx.send(embed=embed)    
+  
 #봇 실행
 bot.run(TOKEN)
