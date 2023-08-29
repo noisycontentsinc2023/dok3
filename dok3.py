@@ -1302,12 +1302,12 @@ class AuthButton3(discord.ui.Button):
         try:
             user_cell = await find_user(self.username, self.sheet10)
             if user_cell is None:
-                embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+                embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 "!등록" 명령어를 통해 먼저 등록해주세요!')
                 await interaction.response.edit_message(embed=embed, view=None)
                 return
             user_row = user_cell.row
         except gspread.exceptions.CellNotFound:
-            embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+            embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 "!등록" 명령어를 통해 먼저 등록해주세요!')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
@@ -1364,7 +1364,7 @@ async def mission_count(ctx):
             break
 
     if user_row is None:
-        embed = discord.Embed(title='Error', description='{ctx.author.mention}님은 2023 어린왕자-북클럽 멤버가 아닙니다')
+        embed = discord.Embed(title='Error', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 "!등록" 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
 
