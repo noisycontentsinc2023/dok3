@@ -1295,11 +1295,37 @@ class AuthButton3(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == self.ctx.author:
             # If the user is the button creator, send an error message
-            embed = discord.Embed(title='Error', description='{ctx.author.mention}님 자신이 생성한 버튼은 사용할 수 없습니다 :(')
+            embed = discord.Embed(title='Error', description='{ctx.author.mention}님, 자신이 생성한 버튼은 사용할 수 없습니다 :(')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
-        tr럽을 인증했습니다👍"), view=None)
+        try:
+            user_cell = await find_user(self.username, self.sheet10)
+            if user_cell is None:
+                embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+                await interaction.response.edit_message(embed=embed, view=None)
+                return
+            user_row = user_cell.row
+        except gspread.exceptions.CellNotFound:
+            embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
+
+        now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
+        self.today = now.strftime('%m%d')
+
+        # Authenticate the user in the spreadsheet
+        today3_col = (await self.sheet10.find(self.today)).col
+        await self.sheet10.update_cell(user_row, today3_col, '1')
+
+        # Set the auth_event to stop the loop
+        self.auth_event.set()
+
+        # Remove the button from the view
+        self.view.clear_items()
+
+        # Send a success message
+        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 학습인증을 인증했습니다👍"), view=None)
         self.stop_loop = True
 
 async def update_embed_book_auth(ctx, username, today3, sheet10):
