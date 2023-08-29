@@ -1218,6 +1218,25 @@ kst = pytz.timezone('Asia/Seoul') # 한국 시간대로 설정
 now = datetime.now(kst).replace(tzinfo=None)
 today3 = now.strftime('%m%d') 
 
+@bot.command(name='등록')
+async def register_user(ctx):
+    sheet10, rows = await get_sheet10()  # get_sheet10 호출 결과값 받기
+    username = str(ctx.message.author)
+
+    user_cell = await find_user(username, sheet10)
+
+    if user_cell is not None:
+        embed = discord.Embed(title='오류', description='이미 등록된 사용자입니다')
+        await ctx.send(embed=embed)
+        return
+
+    # 새로운 사용자 정보 기록
+    new_user_row = [username]  # 새로운 사용자 정보 생성
+    await sheet10.append_row(new_user_row)  # 새로운 사용자 정보 추가
+
+    embed = discord.Embed(title='등록 완료', description='사용자가 성공적으로 등록되었습니다')
+    await ctx.send(embed=embed)
+
 @bot.command(name='북클럽인증')
 async def book_club_auth(ctx):
     required_role = "1139014883262877767" 
