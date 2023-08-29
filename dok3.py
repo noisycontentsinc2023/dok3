@@ -1223,7 +1223,6 @@ async def book_club_auth(ctx):
     required_role = "1139014883262877767" 
     sheet10, rows = await get_sheet10()  # get_sheet10 호출 결과값 받기
     username = str(ctx.message.author)
-    discriminator = ctx.message.author.discriminator 
 
     now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
     today4 = now.strftime('%m%d')
@@ -1235,11 +1234,7 @@ async def book_club_auth(ctx):
             break
 
     if user_row is None:
-        # 새로운 사용자 정보 기록
-        new_user_row = [username + "#" + discriminator] + ["0"] * (len(rows[0]) - 1)  # 새로운 사용자 정보 생성
-        await sheet10.append_row(new_user_row)  # 새로운 사용자 정보 추가
-
-        embed = discord.Embed(title='신규 등록', description='2023 어린왕자-북클럽에 신규 멤버가 등록되었습니다')
+        embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
         await ctx.send(embed=embed)
         return
 
