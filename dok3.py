@@ -1226,7 +1226,7 @@ async def register_user(ctx):
     user_cell = await find_user(username, sheet10)
 
     if user_cell is not None:
-        embed = discord.Embed(title='오류', description='이미 등록된 사용자입니다')
+        embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 이미 등록된 사용자입니다')
         await ctx.send(embed=embed)
         return
 
@@ -1234,7 +1234,7 @@ async def register_user(ctx):
     new_user_row = [username] + ["0"] * (len(rows[0]) - 1)  # 새로운 사용자 정보 생성
     await sheet10.append_row(new_user_row)  # 새로운 사용자 정보 추가
 
-    embed = discord.Embed(title='등록 완료', description='사용자가 성공적으로 등록되었습니다')
+    embed = discord.Embed(title='등록 완료', description='{ctx.author.mention}님 2023 어린왕자-북클럽에 성공적으로 등록되었습니다')
     await ctx.send(embed=embed)
 
 @bot.command(name='북클럽인증')
@@ -1253,14 +1253,14 @@ async def book_club_auth(ctx):
             break
 
     if user_row is None:
-        embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+        embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 "!등록" 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
 
     user_cell = await find_user(username, sheet10)
 
     if user_cell is None:
-        embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
+        embed = discord.Embed(title='오류', description='{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 "!등록" 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
 
@@ -1271,7 +1271,7 @@ async def book_club_auth(ctx):
             break
 
     if today3_col is None:
-        embed = discord.Embed(title='Error', description='2023 어린왕자-북클럽 기간이 아닙니다')
+        embed = discord.Embed(title='Error', description='{ctx.author.mention}님 현재는 2023 어린왕자-북클럽 기간이 아닙니다')
         await ctx.send(embed=embed)
         return
 
@@ -1295,41 +1295,15 @@ class AuthButton3(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == self.ctx.author:
             # If the user is the button creator, send an error message
-            embed = discord.Embed(title='Error', description='자신이 생성한 버튼은 사용할 수 없습니다 :(')
+            embed = discord.Embed(title='Error', description='{ctx.author.mention}님 자신이 생성한 버튼은 사용할 수 없습니다 :(')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
-        try:
-            user_cell = await find_user(self.username, self.sheet10)
-            if user_cell is None:
-                embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
-                await interaction.response.edit_message(embed=embed, view=None)
-                return
-            user_row = user_cell.row
-        except gspread.exceptions.CellNotFound:
-            embed = discord.Embed(title='오류', description='2023 어린왕자-북클럽에 등록된 멤버가 아닙니다')
-            await interaction.response.edit_message(embed=embed, view=None)
-            return
-
-        now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
-        self.today = now.strftime('%m%d')
-
-        # Authenticate the user in the spreadsheet
-        today3_col = (await self.sheet10.find(self.today)).col
-        await self.sheet10.update_cell(user_row, today3_col, '1')
-
-        # Set the auth_event to stop the loop
-        self.auth_event.set()
-
-        # Remove the button from the view
-        self.view.clear_items()
-
-        # Send a success message
-        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 학습인증을 인증했습니다👍"), view=None)
+        tr럽을 인증했습니다👍"), view=None)
         self.stop_loop = True
 
 async def update_embed_book_auth(ctx, username, today3, sheet10):
-    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 학습을 인증해주세요')
+    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 북클럽을 인증해주세요')
     button = AuthButton3(ctx, username, today3, sheet10)
     view = discord.ui.View(timeout=None)
     view.add_item(button)
@@ -1364,7 +1338,7 @@ async def mission_count(ctx):
             break
 
     if user_row is None:
-        embed = discord.Embed(title='Error', description='2023 어린왕자-북클럽 멤버가 아닙니다')
+        embed = discord.Embed(title='Error', description='{ctx.author.mention}님은 2023 어린왕자-북클럽 멤버가 아닙니다')
         await ctx.send(embed=embed)
         return
 
