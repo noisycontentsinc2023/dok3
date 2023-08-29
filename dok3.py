@@ -1295,7 +1295,7 @@ class AuthButton3(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == self.ctx.author:
             # If the user is the button creator, send an error message
-            embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님, 자신이 생성한 버튼은 사용할 수 없습니다 :(')
+            embed = discord.Embed(title='Error', description='자신이 생성한 버튼은 사용할 수 없습니다 :(')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
@@ -1364,7 +1364,7 @@ async def mission_count(ctx):
             break
 
     if user_row is None:
-        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 "!등록" 명령어를 통해 먼저 등록해주세요!')
+        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
 
