@@ -679,7 +679,7 @@ async def update_embed_book_auth(ctx, username, today1, sheet7):
     view.clear_items()
     await message.edit(view=view)
             
-@bot.command(name='북클럽누적')
+@bot.command(name='')
 async def mission_count(ctx):
     if not is_allowed_channel(ctx.channel.id):
         await ctx.send("해당 명령어는 북클럽 채널에서만 사용할 수 있어요")
