@@ -1325,11 +1325,11 @@ class AuthButton3(discord.ui.Button):
         self.view.clear_items()
 
         # Send a success message
-        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 {self.today3} 학습인증을 인증했습니다👍"), view=None)
+        await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 {today3} 학습인증을 인증했습니다👍"), view=None)
         self.stop_loop = True
 
 async def update_embed_book_auth(ctx, username, today3, sheet10):
-    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 {self.today3} 북클럽을 인증해주세요')
+    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 {today3} 북클럽을 인증해주세요')
     button = AuthButton3(ctx, username, today3, sheet10)
     view = discord.ui.View(timeout=None)
     view.add_item(button)
