@@ -1243,8 +1243,8 @@ async def book_club_auth(ctx):
     sheet10, rows = await get_sheet10()  # get_sheet10 호출 결과값 받기
     username = str(ctx.message.author)
 
-    now = datetime.now(kst).replace(tzinfo=None)  # 날짜 업데이트 코드 수정
-    today4 = now.strftime('%m%d')
+    now = datetime.now(kst).replace(tzinfo=None)  # 현재 한국 시간대의 날짜 및 시간 가져오기
+    today3 = now.strftime('%m%d')  # 현재 날짜를 계산하여 문자열로 변환
 
     user_row = None
     for row in await sheet10.get_all_values():
