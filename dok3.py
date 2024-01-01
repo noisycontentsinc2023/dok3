@@ -1240,6 +1240,13 @@ async def register_user(ctx):
 @bot.command(name='북클럽인증')
 async def book_club_auth(ctx):
     required_role = "1186236303365386262" 
+    role = discord.utils.get(ctx.guild.roles, id=int(required_role))
+    
+    if role is None or role not in ctx.author.roles:
+        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 해당 명령어를 실행할 권한이 없습니다.')
+        await ctx.send(embed=embed)
+        return
+      
     sheet10, rows = await get_sheet10()  # get_sheet10 호출 결과값 받기
     username = str(ctx.message.author)
 
