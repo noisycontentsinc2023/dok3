@@ -1232,7 +1232,7 @@ async def register_user(ctx):
 
     # 새로운 사용자 정보 기록
     new_user_row = [username] + ["0"] * (len(rows[0]))  # 새로운 사용자 정보 생성
-    await sheet10.insert_row(new_user_row, 1)  # 1행에 새로운 사용자 정보 추가
+    await sheet10.insert_row(new_user_row, 2)  # 2행에 새로운 사용자 정보 추가
 
     embed = discord.Embed(title='등록 완료', description=f'{ctx.author.mention}님 2024 신데렐라-북클럽에 성공적으로 등록되었습니다')
     await ctx.send(embed=embed)
