@@ -1243,7 +1243,7 @@ async def book_club_auth(ctx):
     role = discord.utils.get(ctx.guild.roles, id=int(required_role))
     
     if role is None or role not in ctx.author.roles:
-        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 해당 명령어를 실행할 권한이 없습니다.')
+        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2024 신데렐라-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
       
