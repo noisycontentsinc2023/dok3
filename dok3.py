@@ -1196,7 +1196,7 @@ async def get_sheet10():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
     spreadsheet = await client.open('서버기록')
-    sheet10 = await spreadsheet.worksheet('2023어린왕자')
+    sheet10 = await spreadsheet.worksheet('2024신데렐')
     rows = await sheet10.get_all_values()
     return sheet10, rows 
 
@@ -1211,7 +1211,7 @@ async def find_user(username, sheet):
     return cell
             
 def is_allowed_channel(channel_id):
-    allowed_channels = ["1057567679281647706", "1139039595615490059"]
+    allowed_channels = ["929917732537909288", "1186235167262646383"]
     return str(channel_id) in allowed_channels
   
 kst = pytz.timezone('Asia/Seoul') # 한국 시간대로 설정 
@@ -1234,12 +1234,12 @@ async def register_user(ctx):
     new_user_row = [username] + ["0"] * (len(rows[0]) - 1)  # 새로운 사용자 정보 생성
     await sheet10.append_row(new_user_row)  # 새로운 사용자 정보 추가
 
-    embed = discord.Embed(title='등록 완료', description=f'{ctx.author.mention}님 2023 어린왕자-북클럽에 성공적으로 등록되었습니다')
+    embed = discord.Embed(title='등록 완료', description=f'{ctx.author.mention}님 2024 신데렐라-북클럽에 성공적으로 등록되었습니다')
     await ctx.send(embed=embed)
 
 @bot.command(name='북클럽인증')
 async def book_club_auth(ctx):
-    required_role = "1139014883262877767" 
+    required_role = "1186236303365386262" 
     sheet10, rows = await get_sheet10()  # get_sheet10 호출 결과값 받기
     username = str(ctx.message.author)
 
@@ -1253,14 +1253,14 @@ async def book_club_auth(ctx):
             break
 
     if user_row is None:
-        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
+        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2024 신데렐라-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
 
     user_cell = await find_user(username, sheet10)
 
     if user_cell is None:
-        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
+        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2024 신데렐라-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
 
@@ -1271,7 +1271,7 @@ async def book_club_auth(ctx):
             break
 
     if today3_col is None:
-        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님 현재는 2023 어린왕자-북클럽 기간이 아닙니다')
+        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님 현재는 2024 신데렐라-북클럽 기간이 아닙니다')
         await ctx.send(embed=embed)
         return
 
@@ -1302,12 +1302,12 @@ class AuthButton3(discord.ui.Button):
         try:
             user_cell = await find_user(self.username, self.sheet10)
             if user_cell is None:
-                embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
+                embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2024 신데렐라-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
                 await interaction.response.edit_message(embed=embed, view=None)
                 return
             user_row = user_cell.row
         except gspread.exceptions.CellNotFound:
-            embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
+            embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 2024 신데렐라-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
@@ -1351,7 +1351,7 @@ async def update_embed_book_auth(ctx, username, today3, sheet10):
 @bot.command(name='북클럽누적')
 async def mission_count(ctx):
     if not is_allowed_channel(ctx.channel.id):
-        await ctx.send("해당 명령어는 <#1139039595615490059>에서만 사용할 수 있어요")
+        await ctx.send("해당 명령어는 <#1186235167262646383>에서만 사용할 수 있어요")
         return
     username = str(ctx.message.author)
     sheet10, rows = await get_sheet10()
@@ -1364,7 +1364,7 @@ async def mission_count(ctx):
             break
 
     if user_row is None:
-        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님은 2023 어린왕자-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
+        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님은 2024 신데렐라-북클럽에 등록된 멤버가 아닙니다 \n !등록 명령어를 통해 먼저 등록해주세요!')
         await ctx.send(embed=embed)
         return
 
