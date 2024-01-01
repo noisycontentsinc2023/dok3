@@ -1211,7 +1211,7 @@ async def find_user(username, sheet):
     return cell
             
 def is_allowed_channel(channel_id):
-    allowed_channels = ["929917732537909288", "1186235167262646383"]
+    allowed_channels = ["929917732537909288", "1186235167262646383","1057567679281647706"]
     return str(channel_id) in allowed_channels
   
 kst = pytz.timezone('Asia/Seoul') # 한국 시간대로 설정 
