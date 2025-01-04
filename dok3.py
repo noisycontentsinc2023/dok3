@@ -190,7 +190,7 @@ async def get_sheet4():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
     spreadsheet = await client.open('서버기록')
-    sheet4 = await spreadsheet.worksheet('독독독')
+    sheet4 = await spreadsheet.worksheet('1일1독2025')
     rows = await sheet4.get_all_values()
     return sheet4, rows 
   
