@@ -183,27 +183,7 @@ async def on_reaction_add(reaction, user):
 
     print(f"Poll {poll_data['title']} ({poll_id}) updated with current vote count")
     
-#------------------------------------------------고정------------------------------------------------------# 
-
-# 각각의 시트 이름은 달라야 하며 서버기록 내 시트이름으로 변경하면 됩니다. 전체 코드에서 시트이름이 중복되면 
-async def get_sheet4():
-    client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
-    client = await client_manager.authorize()
-    spreadsheet = await client.open('서버기록')
-    sheet4 = await spreadsheet.worksheet('1일1독2025')
-    rows = await sheet4.get_all_values()
-    return sheet4, rows 
-  
-sticky_messages = {}
-    
-def has_specific_roles(allowed_role_ids):
-    async def predicate(ctx):
-        allowed_roles = [ctx.guild.get_role(role_id) for role_id in allowed_role_ids]
-        return any(role in ctx.author.roles for role in allowed_roles)
-
-    return commands.check(predicate)
-
-allowed_role_ids = [1019165662364586034, 1003257850799341615]    
+#------------------------------------------------고정------------------------------------------------------#  
     
 # 스프레드시트에서 초기 고정 메시지를 가져옵니다.
 async def refresh_sticky_messages(sheet4):
@@ -303,7 +283,7 @@ async def get_sheet5():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
     spreadsheet = await client.open('서버기록')
-    sheet5 = await spreadsheet.worksheet('1일1독')
+    sheet5 = await spreadsheet.worksheet('1일1독2025')
     rows = await sheet5.get_all_values()
     return sheet5, rows 
 
