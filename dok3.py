@@ -745,7 +745,7 @@ today3 = now.strftime('%m%d')
 
 @bot.command(name='필사인증')
 async def bixie_auth(ctx):
-    required_role_id = 1379704576944373820  # 역할 ID (숫자)
+    required_role_id = 1388054635687710750  # 역할 ID (숫자)
     role = discord.utils.get(ctx.guild.roles, id=required_role_id)
 
     # 역할이 존재하지 않을 경우
