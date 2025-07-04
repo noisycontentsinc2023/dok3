@@ -719,7 +719,7 @@ async def get_sheet50():
     client_manager = gspread_asyncio.AsyncioGspreadClientManager(lambda: aio_creds)
     client = await client_manager.authorize()
     spreadsheet = await client.open('서버기록')
-    sheet50 = await spreadsheet.worksheet('독독독필사클럽')
+    sheet50 = await spreadsheet.worksheet('그림형제 필사클럽')
     rows = await sheet50.get_all_values()
     return sheet50, rows 
 
@@ -740,7 +740,7 @@ def is_allowed_channel(channel_id):
   
 kst = pytz.timezone('Asia/Seoul') # 한국 시간대로 설정 
 now = datetime.now(kst).replace(tzinfo=None)
-today3 = now.strftime('%m%d') 
+today5 = now.strftime('%m%d') 
 
 
 @bot.command(name='필사인증')
@@ -752,7 +752,7 @@ async def bixie_auth(ctx):
     if role is None:
         embed = discord.Embed(
             title='오류',
-            description=f"서버에 '독독독필사클럽' 역할이 존재하지 않습니다. 관리자에게 문의하세요."
+            description=f"서버에 '그림형제 필사클럽' 역할이 존재하지 않습니다. 관리자에게 문의하세요."
         )
         await ctx.send(embed=embed)
         return
@@ -761,7 +761,7 @@ async def bixie_auth(ctx):
     if role not in ctx.author.roles:
         embed = discord.Embed(
             title='오류',
-            description=f"{ctx.author.mention}님은 독독독필사클럽에 등록된 멤버가 아닙니다."
+            description=f"{ctx.author.mention}님은 그림형제 필사클럽에 등록된 멤버가 아닙니다."
         )
         await ctx.send(embed=embed)
         return
@@ -771,7 +771,7 @@ async def bixie_auth(ctx):
     username = str(ctx.message.author)
 
     now = datetime.now(kst).replace(tzinfo=None)  # 현재 한국 시간대의 날짜 및 시간 가져오기
-    today3 = now.strftime('%m%d')  # 현재 날짜를 계산하여 문자열로 변환
+    today5 = now.strftime('%m%d')  # 현재 날짜를 계산하여 문자열로 변환
 
     user_row = None
     for row in await sheet50.get_all_values():
@@ -782,7 +782,7 @@ async def bixie_auth(ctx):
     if user_row is None:
         embed = discord.Embed(
             title='오류',
-            description=f"{ctx.author.mention}님은 독독독필사클럽에 등록된 멤버가 아닙니다."
+            description=f"{ctx.author.mention}님은 그림형제 필사클럽에 등록된 멤버가 아닙니다."
         )
         await ctx.send(embed=embed)
         return
@@ -790,37 +790,37 @@ async def bixie_auth(ctx):
     user_cell = await find_user(username, sheet50)
 
     if user_cell is None:
-        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 독독독필사클럽에 등록된 멤버가 아닙니다.')
+        embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 그림형제 필사클럽에 등록된 멤버가 아닙니다.')
         await ctx.send(embed=embed)
         return
 
-    today3_col = None
+    today5_col = None
     for i, col in enumerate(await sheet50.row_values(1)):
-        if today3 in col:
-            today3_col = i + 1
+        if today5 in col:
+            today5_col = i + 1
             break
 
-    if today3_col is None:
-        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님 현재는 독독독필사클럽 기간이 아닙니다')
+    if today5_col is None:
+        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님 현재는 그림형제 필사클럽 기간이 아닙니다')
         await ctx.send(embed=embed)
         return
 
-    if (await sheet50.cell(user_cell.row, today3_col)).value == '1':
+    if (await sheet50.cell(user_cell.row, today5_col)).value == '1':
         embed = discord.Embed(title='오류', description='이미 오늘의 인증을 하셨습니다')
         await ctx.send(embed=embed)
         return
       
-    await update_embed_book_auth(ctx, username, today3, sheet50)
+    await update_embed_book_auth(ctx, username, today5, sheet50)
         
 class AuthButton3(discord.ui.Button):
-    def __init__(self, ctx, username, today3, sheet50):
+    def __init__(self, ctx, username, today5, sheet50):
         super().__init__(style=discord.ButtonStyle.green, label="필사클럽 인증")
         self.ctx = ctx
         self.username = username
         self.sheet50 = sheet50
         self.auth_event = asyncio.Event()
         self.stop_loop = False
-        self.today3 = today3  # 인스턴스 변수로 today3 저장
+        self.today5 = today5  # 인스턴스 변수로 today5 저장
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user == self.ctx.author:
@@ -832,12 +832,12 @@ class AuthButton3(discord.ui.Button):
         try:
             user_cell = await find_user(self.username, self.sheet50)
             if user_cell is None:
-                embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 독독독필사클럽에 등록된 멤버가 아닙니다.')
+                embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 그림형제 필사클럽에 등록된 멤버가 아닙니다.')
                 await interaction.response.edit_message(embed=embed, view=None)
                 return
             user_row = user_cell.row
         except gspread.exceptions.CellNotFound:
-            embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 독독독필사클럽에 등록된 멤버가 아닙니다.')
+            embed = discord.Embed(title='오류', description=f'{ctx.author.mention}님은 그림형제 필사클럽에 등록된 멤버가 아닙니다.')
             await interaction.response.edit_message(embed=embed, view=None)
             return
 
@@ -845,8 +845,8 @@ class AuthButton3(discord.ui.Button):
         self.today = now.strftime('%m%d')
 
         # Authenticate the user in the spreadsheet
-        today3_col = (await self.sheet50.find(self.today)).col
-        await self.sheet50.update_cell(user_row, today3_col, '1')
+        today5_col = (await self.sheet50.find(self.today)).col
+        await self.sheet50.update_cell(user_row, today5_col, '1')
 
         # Set the auth_event to stop the loop
         self.auth_event.set()
@@ -858,9 +858,9 @@ class AuthButton3(discord.ui.Button):
         await interaction.message.edit(embed=discord.Embed(title="인증완료!", description=f"{interaction.user.mention}님이 {self.ctx.author.mention}의 필사클럽을 인증했습니다👍"), view=None)
         self.stop_loop = True
 
-async def update_embed_book_auth(ctx, username, today3, sheet50):
-    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 {today3} 필사클럽을 인증해주세요')
-    button = AuthButton3(ctx, username, today3, sheet50)
+async def update_embed_book_auth(ctx, username, today5, sheet50):
+    embed = discord.Embed(title="학습인증", description=f' 버튼을 눌러 {ctx.author.mention}님의 {today3} 필사를 인증해주세요')
+    button = AuthButton3(ctx, username, today5, sheet50)
     view = discord.ui.View(timeout=None)
     view.add_item(button)
     message = await ctx.send(embed=embed, view=view)
@@ -868,10 +868,10 @@ async def update_embed_book_auth(ctx, username, today3, sheet50):
     while not button.stop_loop:
         await asyncio.sleep(60)
         now = datetime.now(kst).replace(tzinfo=None)
-        today3 = now.strftime('%m%d')
+        today5 = now.strftime('%m%d')
         if not button.stop_loop:
             view = discord.ui.View(timeout=None)
-            button = AuthButton3(ctx, username, today3, sheet50)
+            button = AuthButton3(ctx, username, today5, sheet50)
             view.add_item(button)
             await message.edit(embed=embed, view=view)
 
@@ -881,7 +881,7 @@ async def update_embed_book_auth(ctx, username, today3, sheet50):
 @bot.command(name='필사누적')
 async def bixie_count(ctx):
     if not is_allowed_channel(ctx.channel.id):
-        await ctx.send("해당 명령어는 <#1194273995319685120>에서만 사용할 수 있어요")
+        await ctx.send("해당 명령어는 <#1388069155126644827>에서만 사용할 수 있어요")
         return
     username = str(ctx.message.author)
     sheet50, rows = await get_sheet50()
@@ -894,7 +894,7 @@ async def bixie_count(ctx):
             break
 
     if user_row is None:
-        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님은 독독독필사클럽에 등록된 멤버가 아닙니다 \n !필사등록 명령어를 통해 먼저 등록해주세요!')
+        embed = discord.Embed(title='Error', description=f'{ctx.author.mention}님은 그림형제 필사클럽에 등록된 멤버가 아닙니다')
         await ctx.send(embed=embed)
         return
 
